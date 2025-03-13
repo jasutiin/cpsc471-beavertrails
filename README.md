@@ -1,4 +1,10 @@
-### beavertrails
+## beavertrails
 
-- have no clue which database to use now that the issue of writing raw sql statements popped up
-- also do not want to have it so that everyone has to download mysql but lowkey might just have to
+canadian travel app B)
+
+### idea for using raw sql queries with supabase
+
+- use node-postgres to write raw sql statements
+- connect to supabase using postgres connection string
+- https://node-postgres.com/apis/client
+- https://supabase.com/docs/guides/database/connecting-to-postgreshttps://supabase.com/docs/guides/database/connecting-to-postgres
