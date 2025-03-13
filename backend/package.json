@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "canadian travel planner app for cpsc 471",
   "main": "db.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
