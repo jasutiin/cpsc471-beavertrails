@@ -1,5 +1,6 @@
 /*
-this is where all the user related functions are. these functions are called
+this is where all the user related functions are. some of the functions
+include getting all users, a specific user's details, etc. these functions are called
 by the endpoints defined in user.routes.js
 */
 

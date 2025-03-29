@@ -1,7 +1,9 @@
 import pg from 'pg';
 import express from 'express';
 import userRouter from './routes/user.routes.js';
-import serviceRouter from './routes/service.routes.js';
+import flightRouter from './routes/flight.routes.js';
+import busRouter from './routes/bus.routes.js';
+import hotelRouter from './routes/hotel.routes.js';
 import { config } from 'dotenv';
 
 config();
@@ -17,7 +19,7 @@ const client = new Client({
 
 await client.connect(); // connect to client
 
-app.use('/api', userRouter, serviceRouter);
+app.use('/api', userRouter, flightRouter, hotelRouter, busRouter);
 
 // set up express server to listen on api endpoints
 app.listen(port, () => {

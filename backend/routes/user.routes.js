@@ -1,8 +1,6 @@
 /* 
-for all user related routes such as updating user data, getting users, getting a single user,
-and deleting a user. only user related routes should go here. we can also get flights of
-a specific user, but since the primary resource is flights then that route can be found in the
-flights controller instead.
+for all user related routes such as finding all users, 
+details of a specific user, etc.
 */
 
 import { Router } from 'express';
