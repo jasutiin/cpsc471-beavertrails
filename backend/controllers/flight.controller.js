@@ -57,3 +57,42 @@ export async function getFlights(req, res) {
   });
   res.send(result.rows);
 }
+
+export async function getFlightById(req, res) {
+  const query = {
+    text: `
+      SELECT f.*
+      FROM Flight f
+      WHERE f.ServiceType_Id = $1;`,
+    values: [req.params.flight_id],
+  };
+
+  const result = await client.query(query);
+  res.send(result.rows);
+}
+
+export async function getSeatsOfFlight(req, res) {
+  const { flightclass } = req.query;
+  const { flight_id } = req.params;
+
+  let query_text = `
+    SELECT fs.*
+    FROM FlightSeat fs
+    WHERE fs.ServiceType_Id = $1
+    AND fs.Is_Taken = FALSE`;
+
+  const query_values = [flight_id];
+
+  if (flightclass) {
+    query_text += ` AND fs.Class = $2`;
+    query_values.push(flightclass);
+  }
+
+  query_text += ';';
+
+  const result = await client.query({
+    text: query_text,
+    values: query_values,
+  });
+  res.send(result.rows);
+}

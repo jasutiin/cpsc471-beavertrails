@@ -67,6 +67,10 @@ A sample JSON response demonstrating the format of the data returned by the API.
 
 1. departure_date=2025-05-10
    - Gets all flights that depart on May 10, 2025
+2. departure_city=Calgary
+   - Gets all flights that depart from Calgary
+3. arrival_city=Toronto
+   - Gets all flights that arrive in Toronto
 
 **Response Example:**
 
@@ -142,10 +146,11 @@ A sample JSON response demonstrating the format of the data returned by the API.
 ```
 [
     {
-        "seat_number": "3A",
+        "seat_number": "1A",
+        "servicetype_id": "1",
         "is_taken": false,
-        "class": "business",
-        "seat_price": "200.00"
+        "class": "economy",
+        "seat_price": "60.00"
     }
 ]
 ```
