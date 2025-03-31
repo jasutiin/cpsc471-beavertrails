@@ -9,13 +9,13 @@ import { client } from '../server.js';
 export async function getFlightBookingsOfUser(req, res) {
   const query = {
     text: `
-    SELECT f.*
-    FROM Flight f
-    JOIN Payment_Books_Service pbs ON f.ServiceType_Id = pbs.ServiceType_Id
-    JOIN Payment p ON pbs.Payment_Id = p.Payment_Id
-    JOIN User_Makes_Payment ump ON p.Payment_Id = ump.Payment_Id
-    JOIN Users u ON ump.User_Id = u.User_Id
-    WHERE u.User_Id = $1;`,
+      SELECT f.*
+      FROM Flight f
+      JOIN Payment_Books_Service pbs ON f.ServiceType_Id = pbs.ServiceType_Id
+      JOIN Payment p ON pbs.Payment_Id = p.Payment_Id
+      JOIN User_Makes_Payment ump ON p.Payment_Id = ump.Payment_Id
+      JOIN Users u ON ump.User_Id = u.User_Id
+      WHERE u.User_Id = $1;`,
     values: [req.params.user_id],
   };
 
