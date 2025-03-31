@@ -6,7 +6,14 @@
   - [Understanding API Endpoints](#understanding-api-endpoints)
   - [Flights](#flights)
     - [Get Flights](#1-get-flights)
-    - [Get User Flights](#2-get-user-flights)
+    - [Get Flight](#1-get-flight)
+    - [Get User Flights](#3-get-user-flights)
+    - [Get Flight Seats](#4-get-flight-seats)
+  - [Buses](#flights)
+    - [Get Buses](#1-get-buses)
+    - [Get Bus](#1-get-bus)
+    - [Get User Buses](#3-get-user-buses)
+    - [Get Bus Seats](#4-get-bus-seats)
 
 ---
 
@@ -19,11 +26,8 @@ Each API endpoint in this documentation follows a standard format:
 The HTTP method specifies the type of request being made. Common methods include:
 
 - GET – Retrieve data from the server
-
 - POST – Send new data to the server
-
 - PUT – Update existing data
-
 - DELETE – Remove data
 
 ### 2. URL
@@ -146,11 +150,10 @@ A sample JSON response demonstrating the format of the data returned by the API.
 ```
 [
     {
-        "seat_number": "1A",
-        "servicetype_id": "1",
+        "seat_number": "3A",
         "is_taken": false,
-        "class": "economy",
-        "seat_price": "60.00"
+        "class": "business",
+        "seat_price": "200.00"
     }
 ]
 ```
@@ -158,3 +161,102 @@ A sample JSON response demonstrating the format of the data returned by the API.
 ---
 
 ## Buses
+
+### 1. Get Buses
+
+**Method:** GET  
+**URL:** api/buses  
+**Description:** Fetches all available buses  
+**Query Parameters:**
+
+1. departure_date=2025-06-05
+   - Gets all buses that depart on June 05, 2025
+2. departure_city=Calgary
+   - Gets all buses that depart from Calgary
+3. arrival_city=Ottawa
+   - Gets all buses that arrive in Ottawa
+
+**Response Example:**
+
+```
+[
+    {
+        "servicetype_id": "9",
+        "departure_city": "Seattle",
+        "arrival_city": "Portland",
+        "departure_time": "2025-06-05T14:00:00.000Z",
+        "arrival_time": "2025-06-05T17:00:00.000Z",
+        "seats_available": 40,
+        "capacity": 50,
+        "bus_price": "35.00",
+        "amenities": "WiFi, Power Outlets"
+    }
+]
+```
+
+### 2. Get Bus
+
+**Method:** GET  
+**URL:** api/buses/:bus_id  
+**Description:** Fetches a single flight's information  
+**Query Parameters:**  
+**Response Example:**
+
+```
+[
+    {
+        "servicetype_id": "3",
+        "departure_city": "Calgary",
+        "arrival_city": "Edmonton",
+        "departure_time": "2025-04-12T15:00:00.000Z",
+        "arrival_time": "2025-04-12T18:30:00.000Z",
+        "seats_available": 30,
+        "capacity": 40,
+        "bus_price": "50.00",
+        "amenities": "WiFi, Reclining Seats"
+    }
+]
+```
+
+### 3. Get User Buses
+
+**Method:** GET  
+**URL:** api/users/:user_id/buses  
+**Description:** Fetches buses that the user booked  
+**Response Example:**
+
+```
+[
+    {
+        "servicetype_id": "3",
+        "departure_city": "Calgary",
+        "arrival_city": "Edmonton",
+        "departure_time": "2025-04-12T15:00:00.000Z",
+        "arrival_time": "2025-04-12T18:30:00.000Z",
+        "seats_available": 30,
+        "capacity": 40,
+        "bus_price": "50.00",
+        "amenities": "WiFi, Reclining Seats"
+    }
+]
+```
+
+### 4. Get Bus Seats
+
+**Method:** GET  
+**URL:** api/buses/:bus_id/seats  
+**Description:** Fetches seats in a specific bus  
+**Response Example:**
+
+```
+[
+    {
+        "seat_number": "3A",
+        "is_taken": false,
+        "class": "business",
+        "seat_price": "200.00"
+    }
+]
+```
+
+---
