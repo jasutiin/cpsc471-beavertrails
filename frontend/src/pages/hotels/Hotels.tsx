@@ -1,4 +1,5 @@
 import HotelCard from '@/components/main/hotels/HotelCard';
+import Navbar from '@/components/main/Navbar';
 
 export default function Hotels() {
   const hotels = [
@@ -9,6 +10,7 @@ export default function Hotels() {
 
   return (
     <div className="p-6">
+      <Navbar selectedTab="hotels" />
       <h2 className="text-2xl font-semibold mb-4">Available Hotels</h2>
       <div className="space-y-4">
         {hotels.map((hotel, index) => (

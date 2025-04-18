@@ -1,4 +1,5 @@
 import FlightCard from '@/components/main/flights/FlightCard';
+import Navbar from '@/components/main/Navbar';
 
 export default function Flights() {
   const flights = [
@@ -24,8 +25,8 @@ export default function Flights() {
 
   return (
     <div className="p-6">
+      <Navbar selectedTab="flights" />
       <h2 className="text-2xl font-semibold mb-4">Available Flights</h2>
-
       <div className="space-y-4">
         {flights.map((flight, index) => (
           <FlightCard

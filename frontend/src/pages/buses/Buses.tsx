@@ -1,4 +1,5 @@
 import BusCard from '@/components/main/buses/BusCard';
+import Navbar from '@/components/main/Navbar';
 
 export default function Buses() {
   const buses = [
@@ -24,6 +25,7 @@ export default function Buses() {
 
   return (
     <div className="p-6">
+      <Navbar selectedTab="buses" />
       <h2 className="text-2xl font-semibold mb-4">Available Buses</h2>
       <div className="space-y-4">
         {buses.map((bus, index) => (
