@@ -54,6 +54,7 @@ export default function Flights() {
               price={flight.flight_price}
               departCity={flight.departure_city}
               arrivalCity={flight.arrival_city}
+              servicetype_id={flight.servicetype_id}
             />
           ))}
         </div>
