@@ -5,11 +5,15 @@ import flightRouter from './routes/flight.routes.js';
 import busRouter from './routes/bus.routes.js';
 import hotelRouter from './routes/hotel.routes.js';
 import { config } from 'dotenv';
+import cors from 'cors';
 
 config();
 const { Client } = pg;
 const app = express();
 const port = 8080;
+
+// enable cors for all routes
+app.use(cors());
 
 // create a new supabase client
 const client = new Client({
@@ -21,7 +25,7 @@ await client.connect(); // connect to client
 
 app.use('/api', userRouter, flightRouter, hotelRouter, busRouter);
 
-// set up express server to listen on api endpoints
+// set up express server to listen on API endpoints
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
