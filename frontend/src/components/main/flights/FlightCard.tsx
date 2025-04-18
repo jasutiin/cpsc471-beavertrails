@@ -40,8 +40,18 @@ export default function FlightCard({
   const formattedDuration = `${durationHours}h ${durationMinutes}m`;
 
   return (
-    <Link to={`/flights/${servicetype_id}`}>
-      <div className="border rounded-2xl p-4 shadow-md max-w-md mx-auto bg-white hover:bg-gray-50 transition">
+    <div className="border rounded-2xl p-4 shadow-md max-w-md mx-auto bg-white hover:bg-gray-50 transition">
+      <Link
+        to={`/flights/${servicetype_id}`}
+        state={{
+          departTime,
+          arrivalTime,
+          price,
+          arrivalCity,
+          departCity,
+          servicetype_id,
+        }}
+      >
         <div className="flex items-center justify-between text-sm text-gray-700">
           <div className="text-left">
             <div className="text-lg font-semibold">
@@ -60,7 +70,7 @@ export default function FlightCard({
             ${price}
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
