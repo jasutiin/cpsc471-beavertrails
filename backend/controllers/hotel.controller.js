@@ -24,10 +24,42 @@ export async function getHotelBookingsOfUser(req, res) {
 }
 
 export async function getAllHotels(req, res) {
-  const query = {
-    text: `SELECT * FROM Hotel;`,
-  };
+  const { city, check_in_time, check_out_time } = req.query;
 
-  const result = await client.query(query);
-  res.send(result.rows);
+  let query_text = `SELECT * FROM HotelRoom`;
+  const query_values = [];
+  const conditions = [];
+
+  if (city) {
+    conditions.push(`city = $${query_values.length + 1}`);
+    query_values.push(city);
+  }
+
+  if (check_in_time) {
+    conditions.push(`check_in_time <= $${query_values.length + 1}`);
+    query_values.push(check_in_time);
+  }
+
+  if (check_out_time) {
+    conditions.push(`check_out_time >= $${query_values.length + 1}`);
+    query_values.push(check_out_time);
+  }
+
+  if (conditions.length > 0) {
+    query_text += ` WHERE ` + conditions.join(' AND ');
+  }
+
+  query_text += ';';
+
+  try {
+    const result = await client.query({
+      text: query_text,
+      values: query_values,
+    });
+
+    res.send(result.rows);
+  } catch (err) {
+    console.error('Error querying hotels:', err);
+    res.status(500).send('Internal Server Error');
+  }
 }
