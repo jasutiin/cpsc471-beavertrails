@@ -15,6 +15,9 @@ const port = 8080;
 // enable cors for all routes
 app.use(cors());
 
+// this is so that express can properly parse req.body into some readable format
+app.use(express.json());
+
 // create a new supabase client
 const client = new Client({
   user: process.env.DB_USER,

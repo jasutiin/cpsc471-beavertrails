@@ -9,6 +9,7 @@ import {
   getFlights,
   getFlightById,
   getSeatsOfFlight,
+  bookSeatInFlight,
 } from '../controllers/flight.controller.js';
 
 const flightRouter = Router();
@@ -17,6 +18,7 @@ flightRouter
   .get('/users/:user_id/flights', getFlightBookingsOfUser)
   .get('/flights', getFlights)
   .get('/flights/:flight_id', getFlightById)
-  .get('/flights/:flight_id/seats', getSeatsOfFlight);
+  .get('/flights/:flight_id/seats', getSeatsOfFlight)
+  .post('/bookings/flights', bookSeatInFlight);
 
 export default flightRouter;
