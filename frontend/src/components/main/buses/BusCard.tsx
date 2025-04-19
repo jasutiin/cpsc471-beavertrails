@@ -1,23 +1,76 @@
+import { Link } from 'react-router-dom';
+
 type BusCardProps = {
-  company: string;
   departTime: string;
   arrivalTime: string;
-  price: number;
+  arrivalCity: string;
+  departCity: string;
+  bus_price: number | string;
+  servicetype_id: string;
 };
 
 export default function BusCard({
-  company,
   departTime,
   arrivalTime,
-  price,
+  bus_price,
+  arrivalCity,
+  departCity,
+  servicetype_id,
 }: BusCardProps) {
+  const depart = new Date(departTime);
+  const arrival = new Date(arrivalTime);
+
+  const formattedDepart = depart.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const formattedArrival = arrival.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  const durationMs = arrival.getTime() - depart.getTime();
+  const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
+  const durationMinutes = Math.floor(
+    (durationMs % (1000 * 60 * 60)) / (1000 * 60)
+  );
+  const formattedDuration = `${durationHours}h ${durationMinutes}m`;
+
   return (
-    <div className="border p-4 rounded-xl shadow-sm">
-      <h3 className="text-lg font-semibold">{company}</h3>
-      <p>
-        {departTime} → {arrivalTime}
-      </p>
-      <p className="text-blue-600 font-medium">${price}</p>
+    <div className="border rounded-2xl p-4 shadow-md max-w-md mx-auto bg-white hover:bg-gray-50 transition">
+      <Link
+        to={`/buses/${servicetype_id}`}
+        state={{
+          departTime,
+          arrivalTime,
+          bus_price,
+          arrivalCity,
+          departCity,
+          servicetype_id,
+        }}
+      >
+        <div className="flex items-center justify-between text-sm text-gray-700">
+          <div className="text-left">
+            <div className="text-lg font-semibold">
+              {formattedDepart} — {formattedArrival}
+            </div>
+            <div className="text-gray-500">
+              {departCity} → {arrivalCity}
+            </div>
+          </div>
+
+          <div className="text-center text-gray-600 text-sm whitespace-nowrap">
+            {formattedDuration}
+          </div>
+
+          <div className="text-right text-blue-600 font-bold text-lg">
+            ${bus_price}
+          </div>
+        </div>
+      </Link>
     </div>
   );
 }
