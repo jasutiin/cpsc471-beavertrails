@@ -1,5 +1,5 @@
 import HotelCard from '@/components/main/hotels/HotelCard';
-import Navbar from '@/components/main/Navbar';
+import Navbar from '@/components/main/Searchbar';
 
 export default function Hotels() {
   const hotels = [

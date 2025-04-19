@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Navbar from '@/components/main/Navbar';
+import Navbar from '@/components/main/Searchbar';
 
 export default function Home() {
   const [selectedTab, setSelectedTab] = useState<

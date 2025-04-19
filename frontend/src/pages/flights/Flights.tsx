@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FlightCard from '@/components/main/flights/FlightCard';
-import Navbar from '@/components/main/Navbar';
+import Navbar from '@/components/main/Searchbar';
 
 export default function Flights() {
   const [flights, setFlights] = useState<any[]>([]);

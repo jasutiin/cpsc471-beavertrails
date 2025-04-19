@@ -1,5 +1,5 @@
 import ActivityCard from '@/components/main/activities/ActivityCard';
-import Navbar from '@/components/main/Navbar';
+import Navbar from '@/components/main/Searchbar';
 
 export default function Activities() {
   const activities = [

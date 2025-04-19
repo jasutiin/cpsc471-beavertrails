@@ -37,14 +37,15 @@ export default function FlightDetail() {
 
   const confirmBooking = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/bookings/`, {
+      const res = await fetch(`http://localhost:8080/api/bookings/flights`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          flightId: servicetype_id,
-          seatNumber: selectedSeat?.seat_number,
+          user_id: 1,
+          servicetype_id: servicetype_id,
+          seat_number: selectedSeat?.seat_number,
         }),
       });
 
