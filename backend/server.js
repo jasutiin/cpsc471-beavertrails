@@ -1,11 +1,13 @@
-import pg from 'pg';
+import { config } from 'dotenv';
+import cors from 'cors';
 import express from 'express';
+import pg from 'pg';
+
 import userRouter from './routes/user.routes.js';
 import flightRouter from './routes/flight.routes.js';
 import busRouter from './routes/bus.routes.js';
 import hotelRouter from './routes/hotel.routes.js';
-import { config } from 'dotenv';
-import cors from 'cors';
+import bookingRouter from './routes/booking.routes.js';
 
 config();
 const { Client } = pg;
@@ -26,7 +28,14 @@ const client = new Client({
 
 await client.connect(); // connect to client
 
-app.use('/api', userRouter, flightRouter, hotelRouter, busRouter);
+app.use(
+  '/api',
+  userRouter,
+  flightRouter,
+  hotelRouter,
+  busRouter,
+  bookingRouter
+);
 
 // set up express server to listen on API endpoints
 app.listen(port, () => {
