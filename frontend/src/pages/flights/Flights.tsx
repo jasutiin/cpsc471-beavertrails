@@ -38,7 +38,7 @@ export default function Flights() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-[calc(100vh-80px)] bg-gray-50">
       <Searchbar selectedTab="flights" />
 
       <main className="p-6 flex justify-center">

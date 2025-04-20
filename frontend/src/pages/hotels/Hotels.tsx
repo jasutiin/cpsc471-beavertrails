@@ -9,7 +9,7 @@ export default function Hotels() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-6 h-[calc(100vh-80px)]">
       <Searchbar selectedTab="hotels" />
       <h2 className="text-2xl font-semibold mb-4">Available Hotels</h2>
       <div className="space-y-4">

@@ -33,7 +33,7 @@ export default function User() {
   }, [user_id]);
 
   return (
-    <div className="p-6 space-y-4">
+    <div className="h-[calc(100vh-80px)] p-6 space-y-4">
       <h1 className="text-2xl font-semibold">Your Bookings</h1>
       {loading ? (
         <Skeleton className="w-full h-24 rounded-xl" />

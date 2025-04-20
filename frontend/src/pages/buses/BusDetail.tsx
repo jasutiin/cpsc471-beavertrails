@@ -37,7 +37,7 @@ export default function BusDetail() {
   }
 
   return (
-    <div className="p-6 flex justify-center">
+    <div className="h-[calc(100vh-80px)] p-6 flex justify-center">
       <div className="w-full max-w-5xl space-y-6">
         <button
           onClick={() => navigate(-1)}

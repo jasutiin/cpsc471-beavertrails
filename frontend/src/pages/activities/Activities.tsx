@@ -9,7 +9,7 @@ export default function Activities() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="h-[calc(100vh-80px)] p-6">
       <Searchbar selectedTab="activities" />
       <h2 className="text-2xl font-semibold mb-4">Available Activities</h2>
       <div className="space-y-4">
