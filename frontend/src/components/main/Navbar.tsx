@@ -16,7 +16,7 @@ export default function Navbar({ userId }: NavbarProps) {
         />
       </Link>
       <Link
-        to={`/users/${userId}`}
+        to={`/users/${1}`}
         className={cn('text-sm font-medium text-blue-600 hover:underline')}
       >
         User

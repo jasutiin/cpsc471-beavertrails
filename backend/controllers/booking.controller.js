@@ -6,32 +6,88 @@ by the endpoints defined in booking.routes.js
 
 import { client } from '../server.js';
 
-// not complete, this database schema sucks imma redesign it
 export async function getUserBookings(req, res) {
-  const { id } = req.params;
+  const { user_id } = req.params;
 
   try {
     const query = `
-    SELECT 
-      pbs.payment_id,
-      CASE
-        WHEN f.ServiceType_Id IS NOT NULL THEN 'Flight'
-        WHEN b.ServiceType_Id IS NOT NULL THEN 'Bus'
-        WHEN h.ServiceType_Id IS NOT NULL THEN 'HotelRoom'
-        WHEN a.ServiceType_Id IS NOT NULL THEN 'Activity'
-        ELSE 'Unknown'
-      END AS service_type
-    FROM user_makes_payment ump
-    JOIN payment p ON ump.payment_id = p.payment_id
-    JOIN payment_books_service pbs ON p.payment_id = pbs.payment_id
-    LEFT JOIN flight f ON p.serviceType_id = f.serviceType_id
-    LEFT JOIN bus b ON p.serviceType_id = b.serviceType_id
-    LEFT JOIN hotelroom h ON p.serviceType_id = h.serviceType_id
-    LEFT JOIN activity a ON p.serviceType_id = a.serviceType_id
-    WHERE ump.user_id = $1;
-  `;
+      SELECT 
+        ump.user_id,
+        p.payment_id,
+        pbs.servicetype_id,
+        'flight' AS service_type,
+        f.departure_city,
+        f.arrival_city,
+        f.departure_time,
+        f.arrival_time,
+        f.flightclassoptions,
+        f.flight_price
+      FROM user_makes_payment ump
+      JOIN payment p ON ump.payment_id = p.payment_id
+      JOIN payment_books_service pbs ON p.payment_id = pbs.payment_id
+      JOIN flight f ON f.servicetype_id = pbs.servicetype_id
+      WHERE ump.user_id = $1
 
-    const result = await client.query(query, [id]);
+      UNION ALL
+
+      SELECT 
+        ump.user_id,
+        p.payment_id,
+        pbs.servicetype_id,
+        'bus' AS service_type,
+        b.departure_city,
+        b.arrival_city,
+        b.departure_time,
+        b.arrival_time,
+        NULL,
+        b.bus_price
+      FROM user_makes_payment ump
+      JOIN payment p ON ump.payment_id = p.payment_id
+      JOIN payment_books_service pbs ON p.payment_id = pbs.payment_id
+      JOIN bus b ON b.servicetype_id = pbs.servicetype_id
+      WHERE ump.user_id = $1
+
+      UNION ALL
+
+      SELECT 
+        ump.user_id,
+        p.payment_id,
+        pbs.servicetype_id,
+        'hotel' AS service_type,
+        NULL,
+        NULL,
+        h.check_in_time,
+        h.check_out_time,
+        h.room_type,
+        h.price
+      FROM user_makes_payment ump
+      JOIN payment p ON ump.payment_id = p.payment_id
+      JOIN payment_books_service pbs ON p.payment_id = pbs.payment_id
+      JOIN hotelroom h ON h.servicetype_id = pbs.servicetype_id
+      WHERE ump.user_id = $1
+
+      UNION ALL
+
+      SELECT 
+        ump.user_id,
+        p.payment_id,
+        pbs.servicetype_id,
+        'activity' AS service_type,
+        NULL,
+        NULL,
+        a.start_time,
+        a.end_time,
+        a.description,
+        a.price
+      FROM user_makes_payment ump
+      JOIN payment p ON ump.payment_id = p.payment_id
+      JOIN payment_books_service pbs ON p.payment_id = pbs.payment_id
+      JOIN activity a ON a.servicetype_id = pbs.servicetype_id
+      WHERE ump.user_id = $1;
+    `;
+
+    const result = await client.query(query, [user_id]);
+    console.log(result);
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching user bookings:', err);
