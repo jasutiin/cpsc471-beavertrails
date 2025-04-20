@@ -1,32 +1,41 @@
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 export default function CompanyDetail() {
-  const company = {
-    name: 'Tech Innovators Inc.',
-    phone: '123-456-7890',
-    email: 'info@techinnovators.com',
-    description: 'A leading company in tech innovation and software solutions.',
-  };
-
-  const reviews = [
-    {
-      text: 'Great flight experience!',
-      rating: null,
-      reviewer: 'Alice Johnson',
-    },
-    {
-      text: 'The bus ride was comfortable.',
-      rating: 5,
-      reviewer: 'Michael Lee',
-    },
-    {
-      text: 'The hotel service was excellent.',
-      rating: 4,
-      reviewer: 'Sofia Martinez',
-    },
-  ];
-
+  const [company, setCompany] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    async function fetchCompanyData() {
+      try {
+        const response = await fetch('http://localhost:8080/api/companies/1');
+        const data = await response.json();
+
+        setCompany({
+          name: data.company_name,
+          phone: data.phone_number,
+          email: data.email,
+          description: data.description,
+        });
+
+        // this isn't implemented in the backend yet
+        const reviewResponse = await fetch(
+          'http://localhost:8080/api/companies/1/reviews'
+        );
+        const reviewData = await reviewResponse.json();
+        setReviews(reviewData);
+      } catch (error) {
+        console.error('Error fetching company data:', error);
+      }
+    }
+
+    fetchCompanyData();
+  }, []);
+
+  if (!company) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="p-6 font-sans">

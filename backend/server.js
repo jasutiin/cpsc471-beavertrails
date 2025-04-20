@@ -8,6 +8,7 @@ import flightRouter from './routes/flight.routes.js';
 import busRouter from './routes/bus.routes.js';
 import hotelRouter from './routes/hotel.routes.js';
 import bookingRouter from './routes/booking.routes.js';
+import companyRouter from './routes/company.routes.js';
 
 config();
 const { Client } = pg;
@@ -34,7 +35,8 @@ app.use(
   flightRouter,
   hotelRouter,
   busRouter,
-  bookingRouter
+  bookingRouter,
+  companyRouter
 );
 
 // set up express server to listen on API endpoints
