@@ -88,3 +88,60 @@ export async function getSeatsOfBus(req, res) {
   });
   res.send(result.rows);
 }
+
+export async function bookSeatInBus(req, res) {
+  const { user_id, servicetype_id, seat_number } = req.body;
+
+  try {
+    await client.query('BEGIN');
+
+    const paymentQuery = `
+      INSERT INTO Payment (ServiceType_Id)
+      VALUES ($1)
+      RETURNING Payment_Id;
+    `;
+    const paymentResult = await client.query(paymentQuery, [servicetype_id]);
+
+    const payment_id = paymentResult.rows[0]?.payment_id;
+    if (!payment_id) {
+      throw new Error('Failed to generate payment_id');
+    }
+
+    const paymentBooksServiceQuery = `
+      INSERT INTO Payment_Books_Service (Payment_Id, ServiceType_Id)
+      VALUES ($1, $2);
+    `;
+    await client.query(paymentBooksServiceQuery, [payment_id, servicetype_id]);
+
+    const userMakesPaymentQuery = `
+      INSERT INTO User_Makes_Payment (User_Id, Payment_Id)
+      VALUES ($1, $2);
+    `;
+    await client.query(userMakesPaymentQuery, [user_id, payment_id]);
+
+    const updateSeatQuery = `
+      UPDATE BusSeat
+      SET Is_Taken = TRUE
+      WHERE ServiceType_Id = $1 AND Seat_Number = $2 AND Is_Taken = FALSE;
+    `;
+    const updateResult = await client.query(updateSeatQuery, [
+      servicetype_id,
+      seat_number,
+    ]);
+
+    if (updateResult.rowCount === 0) {
+      throw new Error('Seat is already taken or does not exist.');
+    }
+
+    await client.query('COMMIT');
+
+    res.status(200).json({
+      message: 'Seat successfully booked and payment processed.',
+      payment_id: payment_id,
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+}

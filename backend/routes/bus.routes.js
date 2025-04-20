@@ -9,6 +9,7 @@ import {
   getBuses,
   getBusById,
   getSeatsOfBus,
+  bookSeatInBus,
 } from '../controllers/bus.controller.js';
 
 const busRouter = Router();
@@ -17,6 +18,7 @@ busRouter
   .get('/users/:user_id/buses', getBusBookingsOfUser)
   .get('/buses', getBuses)
   .get('/buses/:bus_id', getBusById)
-  .get('/buses/:bus_id/seats', getSeatsOfBus);
+  .get('/buses/:bus_id/seats', getSeatsOfBus)
+  .post('/bookings/buses', bookSeatInBus);
 
 export default busRouter;
