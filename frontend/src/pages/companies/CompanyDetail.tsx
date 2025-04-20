@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 export default function CompanyDetail() {
   const company = {
     name: 'Tech Innovators Inc.',
@@ -24,8 +26,16 @@ export default function CompanyDetail() {
     },
   ];
 
+  const navigate = useNavigate();
+
   return (
     <div className="p-6 font-sans">
+      <button
+        onClick={() => navigate(-1)}
+        className="text-sm px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 transition mb-4"
+      >
+        ← Back
+      </button>
       <h1 className="text-3xl font-bold text-gray-800 mb-4">{company.name}</h1>
 
       <div className="space-y-4 mb-6">

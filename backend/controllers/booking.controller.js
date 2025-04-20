@@ -11,7 +11,6 @@ export async function getUserBookings(req, res) {
 
   try {
     const query = `
-    -- Flight
     SELECT 
       ump.user_id,
       p.payment_id,
@@ -23,6 +22,7 @@ export async function getUserBookings(req, res) {
       f.arrival_time,
       f.flightclassoptions,
       f.flight_price,
+      c.company_id,
       c.company_name
     FROM user_makes_payment ump
     JOIN payment p ON ump.payment_id = p.payment_id
@@ -34,7 +34,6 @@ export async function getUserBookings(req, res) {
   
     UNION ALL
   
-    -- Bus
     SELECT 
       ump.user_id,
       p.payment_id,
@@ -46,6 +45,7 @@ export async function getUserBookings(req, res) {
       b.arrival_time,
       NULL,
       b.bus_price,
+      c.company_id,
       c.company_name
     FROM user_makes_payment ump
     JOIN payment p ON ump.payment_id = p.payment_id
@@ -57,7 +57,6 @@ export async function getUserBookings(req, res) {
   
     UNION ALL
   
-    -- Hotel
     SELECT 
       ump.user_id,
       p.payment_id,
@@ -69,6 +68,7 @@ export async function getUserBookings(req, res) {
       h.check_out_time,
       h.room_type,
       h.price,
+      c.company_id,
       c.company_name
     FROM user_makes_payment ump
     JOIN payment p ON ump.payment_id = p.payment_id
@@ -80,7 +80,6 @@ export async function getUserBookings(req, res) {
   
     UNION ALL
   
-    -- Activity
     SELECT 
       ump.user_id,
       p.payment_id,
@@ -92,6 +91,7 @@ export async function getUserBookings(req, res) {
       a.end_time,
       a.description,
       a.price,
+      c.company_id,
       c.company_name
     FROM user_makes_payment ump
     JOIN payment p ON ump.payment_id = p.payment_id

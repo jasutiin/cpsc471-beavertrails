@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -32,6 +32,8 @@ interface Booking {
   age_restriction: boolean | null;
   activity_start: string | null;
   activity_end: string | null;
+  company_name: string | null;
+  company_id: number | null;
 }
 
 export default function User() {
@@ -58,93 +60,105 @@ export default function User() {
     fetchBookings();
   }, [user_id]);
 
-  const renderBookingDetails = (booking: Booking) => {
-    switch (booking.service_type) {
+  const formatDateTime = (datetime: string | null) =>
+    datetime ? new Date(datetime).toLocaleString() : 'N/A';
+
+  const renderBookingDetails = (b: Booking) => {
+    switch (b.service_type) {
       case 'flight':
         return (
           <>
+            <div className="flex gap-4">
+              <p>
+                <strong>Departure:</strong> {b.departure_city}
+              </p>
+              <p>
+                <strong>Arrival:</strong> {b.arrival_city}
+              </p>
+            </div>
+            <div className="flex gap-4">
+              <p>
+                <strong>Departure Time:</strong>{' '}
+                {formatDateTime(b.departure_time)}
+              </p>
+              <p>
+                <strong>Arrival Time:</strong> {formatDateTime(b.arrival_time)}
+              </p>
+            </div>
             <p>
-              <strong>Departure City:</strong> {booking.departure_city}
+              <strong>Class:</strong> {b.flightclassoptions}
             </p>
             <p>
-              <strong>Arrival City:</strong> {booking.arrival_city}
-            </p>
-            <p>
-              <strong>Departure Time:</strong>{' '}
-              {new Date(booking.departure_time!).toLocaleString()}
-            </p>
-            <p>
-              <strong>Arrival Time:</strong>{' '}
-              {new Date(booking.arrival_time!).toLocaleString()}
-            </p>
-            <p>
-              <strong>Flight Class Options:</strong>{' '}
-              {booking.flightclassoptions}
-            </p>
-            <p>
-              <strong>Flight Price:</strong> ${booking.flight_price}
+              <strong>Price:</strong> ${b.flight_price}
             </p>
           </>
         );
       case 'bus':
         return (
           <>
+            <div className="flex gap-4">
+              <p>
+                <strong>Departure:</strong> {b.departure_city}
+              </p>
+              <p>
+                <strong>Arrival:</strong> {b.arrival_city}
+              </p>
+            </div>
+            <div className="flex gap-4">
+              <p>
+                <strong>Departure Time:</strong>{' '}
+                {formatDateTime(b.departure_time)}
+              </p>
+              <p>
+                <strong>Arrival Time:</strong> {formatDateTime(b.arrival_time)}
+              </p>
+            </div>
             <p>
-              <strong>Departure City:</strong> {booking.departure_city}
+              <strong>Price:</strong> ${b.bus_price}
             </p>
             <p>
-              <strong>Arrival City:</strong> {booking.arrival_city}
-            </p>
-            <p>
-              <strong>Departure Time:</strong>{' '}
-              {new Date(booking.departure_time!).toLocaleString()}
-            </p>
-            <p>
-              <strong>Arrival Time:</strong>{' '}
-              {new Date(booking.arrival_time!).toLocaleString()}
-            </p>
-            <p>
-              <strong>Bus Price:</strong> ${booking.bus_price}
-            </p>
-            <p>
-              <strong>Amenities:</strong> {booking.bus_amenities}
+              <strong>Amenities:</strong> {b.bus_amenities}
             </p>
           </>
         );
       case 'hotel':
         return (
           <>
+            <div className="flex gap-4">
+              <p>
+                <strong>Room Number:</strong> {b.room_number}
+              </p>
+              <p>
+                <strong>Type:</strong> {b.room_type}
+              </p>
+              <p>
+                <strong>Bed:</strong> {b.bed_type}
+              </p>
+            </div>
+            <div className="flex gap-4">
+              <p>
+                <strong>Check-In:</strong> {formatDateTime(b.check_in_time)}
+              </p>
+              <p>
+                <strong>Check-Out:</strong> {formatDateTime(b.check_out_time)}
+              </p>
+            </div>
+            <div className="flex gap-4">
+              <p>
+                <strong>City:</strong> {b.hotel_city}
+              </p>
+              <p>
+                <strong>Capacity:</strong> {b.hotel_capacity}
+              </p>
+              <p>
+                <strong>Floor:</strong> {b.floor_number}
+              </p>
+            </div>
             <p>
-              <strong>Room Number:</strong> {booking.room_number}
+              <strong>Status:</strong> {b.room_status}
             </p>
             <p>
-              <strong>Room Type:</strong> {booking.room_type}
-            </p>
-            <p>
-              <strong>Check-In Time:</strong>{' '}
-              {new Date(booking.check_in_time!).toLocaleString()}
-            </p>
-            <p>
-              <strong>Check-Out Time:</strong>{' '}
-              {new Date(booking.check_out_time!).toLocaleString()}
-            </p>
-            <p>
-              <strong>Hotel Price:</strong> ${booking.hotel_price}
-            </p>
-            <p>
-              <strong>Bed Type:</strong> {booking.bed_type}
-            </p>
-            <p>
-              <strong>City:</strong> {booking.hotel_city}
-            </p>
-            <p>
-              <strong>Capacity:</strong> {booking.hotel_capacity}
-            </p>
-            <p>
-              <strong>Floor Number:</strong> {booking.floor_number}
-            </p>
-            <p>
-              <strong>Status:</strong> {booking.room_status}
+              <strong>Price:</strong> ${b.hotel_price}
             </p>
           </>
         );
@@ -152,26 +166,28 @@ export default function User() {
         return (
           <>
             <p>
-              <strong>Description:</strong> {booking.activity_description}
+              <strong>Description:</strong> {b.activity_description}
             </p>
-            <p>
-              <strong>Price:</strong> ${booking.activity_price}
-            </p>
-            <p>
-              <strong>Capacity:</strong> {booking.activity_capacity}
-            </p>
-            <p>
-              <strong>Age Restriction:</strong>{' '}
-              {booking.age_restriction ? 'Yes' : 'No'}
-            </p>
-            <p>
-              <strong>Start Time:</strong>{' '}
-              {new Date(booking.activity_start!).toLocaleString()}
-            </p>
-            <p>
-              <strong>End Time:</strong>{' '}
-              {new Date(booking.activity_end!).toLocaleString()}
-            </p>
+            <div className="flex gap-4">
+              <p>
+                <strong>Start:</strong> {formatDateTime(b.activity_start)}
+              </p>
+              <p>
+                <strong>End:</strong> {formatDateTime(b.activity_end)}
+              </p>
+            </div>
+            <div className="flex gap-4">
+              <p>
+                <strong>Price:</strong> ${b.activity_price}
+              </p>
+              <p>
+                <strong>Capacity:</strong> {b.activity_capacity}
+              </p>
+              <p>
+                <strong>Age Restriction:</strong>{' '}
+                {b.age_restriction ? 'Yes' : 'No'}
+              </p>
+            </div>
           </>
         );
       default:
@@ -185,13 +201,25 @@ export default function User() {
       {loading ? (
         <Skeleton className="w-full h-24 rounded-xl" />
       ) : bookings && bookings.length > 0 ? (
-        bookings.map((booking) => (
-          <Card key={booking.payment_id}>
-            <CardContent className="p-4">
-              <p>
-                <strong>Service Type:</strong> {booking.service_type}
+        bookings.map((b) => (
+          <Card key={b.payment_id}>
+            <CardContent className="p-4 space-y-1">
+              <div className="flex items-center gap-2 text-xl font-semibold">
+                {b.company_id ? (
+                  <Link
+                    to={`/companies/${b.company_id}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {b.company_name ?? 'Unknown Company'}
+                  </Link>
+                ) : (
+                  <span>{b.company_name ?? 'Unknown Company'}</span>
+                )}
+              </div>
+              <p className="text-sm text-gray-500">
+                <strong>Service Type:</strong> {b.service_type}
               </p>
-              {renderBookingDetails(booking)}
+              {renderBookingDetails(b)}
             </CardContent>
           </Card>
         ))
