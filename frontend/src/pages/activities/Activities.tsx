@@ -1,5 +1,5 @@
 import ActivityCard from '@/components/main/activities/ActivityCard';
-import Navbar from '@/components/main/Searchbar';
+import Searchbar from '@/components/main/Searchbar';
 
 export default function Activities() {
   const activities = [
@@ -10,7 +10,7 @@ export default function Activities() {
 
   return (
     <div className="p-6">
-      <Navbar selectedTab="activities" />
+      <Searchbar selectedTab="activities" />
       <h2 className="text-2xl font-semibold mb-4">Available Activities</h2>
       <div className="space-y-4">
         {activities.map((activity, index) => (

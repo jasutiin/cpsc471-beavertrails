@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import Navbar from '@/components/main/Searchbar';
+import Searchbar from '@/components/main/Searchbar';
 
 export default function Home() {
   const [selectedTab, setSelectedTab] = useState<
@@ -28,7 +28,7 @@ export default function Home() {
           )}
         </div>
 
-        <Navbar selectedTab={selectedTab} />
+        <Searchbar selectedTab={selectedTab} />
       </div>
     </div>
   );

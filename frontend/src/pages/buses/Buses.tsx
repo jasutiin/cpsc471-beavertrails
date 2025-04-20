@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BusCard from '@/components/main/buses/BusCard';
-import Navbar from '@/components/main/Searchbar';
+import Searchbar from '@/components/main/Searchbar';
 
 export default function Buses() {
   const [buses, setBuses] = useState<any[]>([]);
@@ -39,7 +39,7 @@ export default function Buses() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar selectedTab="buses" />
+      <Searchbar selectedTab="buses" />
 
       <main className="p-6 flex justify-center">
         <div className="w-full max-w-4xl">

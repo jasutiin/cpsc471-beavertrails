@@ -7,10 +7,10 @@ interface NavbarProps {
 
 export default function Navbar({ userId }: NavbarProps) {
   return (
-    <nav className="flex items-center justify-between px-6 py-4 border-b bg-white shadow-sm">
+    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 border-b bg-white shadow-sm">
       <Link to="/">
         <img
-          src="../../../public/beavertrails_logo.png"
+          src="beavertrails_logo.png"
           alt="Beavertrails Logo"
           className="h-16 w-auto"
         />
