@@ -1,7 +1,7 @@
 /*
 this is where all the hotel related functions are. some of the functions
-include getting all hotel rooms, hotel rooms of a specific user, etc. these functions are called
-by the endpoints defined in hotel.routes.js
+include getting all hotel rooms, hotel rooms of a specific user, etc.
+these functions are called by the endpoints defined in hotel.routes.js
 */
 
 import { client } from '../server.js';
@@ -9,13 +9,14 @@ import { client } from '../server.js';
 export async function getHotelBookingsOfUser(req, res) {
   const query = {
     text: `
-    SELECT h.*
-    FROM HotelRoom h
-    JOIN Payment_Books_Service pbs ON h.ServiceType_Id = pbs.ServiceType_Id
-    JOIN Payment p ON pbs.Payment_Id = p.Payment_Id
-    JOIN User_Makes_Payment ump ON p.Payment_Id = ump.Payment_Id
-    JOIN Users u ON ump.User_Id = u.User_Id
-    WHERE u.User_Id = $1`,
+      SELECT h.*
+      FROM HotelRoom h
+      JOIN Payment_Books_Service pbs ON h.ServiceType_Id = pbs.ServiceType_Id
+      JOIN Payment p ON pbs.Payment_Id = p.Payment_Id
+      JOIN User_Makes_Payment ump ON p.Payment_Id = ump.Payment_Id
+      JOIN Users u ON ump.User_Id = u.User_Id
+      WHERE u.User_Id = $1
+    `,
     values: [req.params.user_id],
   };
 
@@ -61,5 +62,45 @@ export async function getAllHotels(req, res) {
   } catch (err) {
     console.error('Error querying hotels:', err);
     res.status(500).send('Internal Server Error');
+  }
+}
+
+export async function getHotelById(req, res) {
+  const { servicetype_id } = req.params;
+
+  try {
+    const result = await client.query(
+      'SELECT * FROM HotelRoom WHERE servicetype_id = $1',
+      [servicetype_id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Hotel not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching hotel by ID:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+export async function bookHotel(req, res) {
+  const { servicetype_id } = req.body;
+
+  if (!servicetype_id) {
+    return res.status(400).json({ message: 'Missing servicetype_id' });
+  }
+
+  try {
+    await client.query(
+      'UPDATE HotelRoom SET status = $1 WHERE servicetype_id = $2',
+      ['Booked', servicetype_id]
+    );
+
+    res.status(200).json({ message: 'Hotel booked successfully!' });
+  } catch (err) {
+    console.error('Error booking hotel:', err);
+    res.status(500).json({ message: 'Booking failed due to server error' });
   }
 }

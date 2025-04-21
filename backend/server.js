@@ -23,12 +23,25 @@ app.use(express.json());
 
 // create a new supabase client
 const client = new Client({
-  user: process.env.DB_USER,
   connectionString: process.env.DB_CONNECTION_STRING,
 });
 
 await client.connect(); // connect to client
 
+// reset hotel statuses on server start
+async function resetHotelRoomStatus() {
+  try {
+    const result = await client.query(`UPDATE HotelRoom SET status = 'Available'`);
+    console.log(`Reset success: ${result.rowCount} rooms updated to 'Available'`);
+  } catch (err) {
+    console.error(' Failed to reset hotel statuses:', err);
+  }
+}
+
+
+resetHotelRoomStatus(); // run the reset
+
+// API routes
 app.use(
   '/api',
   userRouter,
@@ -39,9 +52,10 @@ app.use(
   companyRouter
 );
 
-// set up express server to listen on API endpoints
+// start the server
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
 export { app, client };
+
