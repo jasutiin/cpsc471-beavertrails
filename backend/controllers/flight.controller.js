@@ -26,22 +26,31 @@ export async function getFlightBookingsOfUser(req, res) {
 export async function getFlights(req, res) {
   const { departure_date, departure_city, arrival_city } = req.query;
 
-  let query_text = `SELECT * FROM Flight`;
+  let query_text = `
+    SELECT 
+      f.*, 
+      c.company_name,
+      c.company_id
+    FROM Flight f
+    JOIN FlightCompany_Offers_Flight fc ON f.ServiceType_Id = fc.ServiceType_Id
+    JOIN Company c ON fc.Company_Id = c.Company_Id
+  `;
+
   const query_values = [];
   const conditions = [];
 
   if (departure_city) {
-    conditions.push(`departure_city = $${query_values.length + 1}`);
+    conditions.push(`f.departure_city = $${query_values.length + 1}`);
     query_values.push(departure_city);
   }
 
   if (arrival_city) {
-    conditions.push(`arrival_city = $${query_values.length + 1}`);
+    conditions.push(`f.arrival_city = $${query_values.length + 1}`);
     query_values.push(arrival_city);
   }
 
   if (departure_date) {
-    conditions.push(`DATE(departure_time) = $${query_values.length + 1}`);
+    conditions.push(`DATE(f.departure_time) = $${query_values.length + 1}`);
     query_values.push(departure_date);
   }
 
@@ -51,11 +60,17 @@ export async function getFlights(req, res) {
 
   query_text += ';';
 
-  const result = await client.query({
-    text: query_text,
-    values: query_values,
-  });
-  res.send(result.rows);
+  try {
+    const result = await client.query({
+      text: query_text,
+      values: query_values,
+    });
+
+    res.send(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error fetching flights');
+  }
 }
 
 export async function getFlightById(req, res) {
