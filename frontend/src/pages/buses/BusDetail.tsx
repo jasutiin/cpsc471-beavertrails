@@ -1,10 +1,12 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function BusDetail() {
   const { servicetype_id } = useParams();
   const navigate = useNavigate();
   const { state } = useLocation();
+  const { user } = useAuth();
 
   const [seats, setSeats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,7 @@ export default function BusDetail() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: 1,
+          user_id: user.user_id,
           servicetype_id: servicetype_id,
           seat_number: selectedSeat?.seat_number,
         }),
