@@ -12,13 +12,13 @@ export default function Hotels() {
     const fetchHotels = async () => {
       const searchParams = new URLSearchParams(window.location.search);
       const location = searchParams.get('location');
-      const checkInDate = searchParams.get('checkInDate');
-      const checkOutDate = searchParams.get('checkOutDate');
+      const checkInDate = searchParams.get('departureDate');
+      const checkOutDate = searchParams.get('arrivalDate');
 
       if (location && checkInDate && checkOutDate) {
         try {
           const res = await fetch(
-            `http://localhost:8080/api/hotels?location=${location}&checkInDate=${checkInDate}&checkOutDate=${checkOutDate}`
+            `http://localhost:8080/api/hotels?city=${location}&check_in_time=${checkInDate}&check_out_time=${checkOutDate}`
           );
           const data = await res.json();
           setHotels(data);
