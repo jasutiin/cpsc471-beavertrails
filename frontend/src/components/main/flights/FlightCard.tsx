@@ -7,6 +7,7 @@ type FlightCardProps = {
   departCity: string;
   price: number | string;
   servicetype_id: string;
+  company_name: string;
 };
 
 export default function FlightCard({
@@ -16,6 +17,7 @@ export default function FlightCard({
   arrivalCity,
   departCity,
   servicetype_id,
+  company_name,
 }: FlightCardProps) {
   const depart = new Date(departTime);
   const arrival = new Date(arrivalTime);
@@ -50,8 +52,10 @@ export default function FlightCard({
           arrivalCity,
           departCity,
           servicetype_id,
+          company_name,
         }}
       >
+        <h2>{company_name}</h2>
         <div className="flex items-center justify-between text-sm text-gray-700">
           <div className="text-left">
             <div className="text-lg font-semibold">

@@ -69,6 +69,7 @@ export default function Flights() {
                   departCity={flight.departure_city}
                   arrivalCity={flight.arrival_city}
                   servicetype_id={flight.servicetype_id}
+                  company_name={flight.company_name}
                 />
               ))}
             </div>
