@@ -19,7 +19,6 @@ export default function CompanyDetail() {
           description: data.description,
         });
 
-        // this isn't implemented in the backend yet
         const reviewResponse = await fetch(
           'http://localhost:8080/api/companies/1/reviews'
         );
@@ -63,8 +62,11 @@ export default function CompanyDetail() {
       <div>
         <h2 className="text-2xl font-semibold text-gray-800 mb-3">Reviews</h2>
         <div className="space-y-4">
-          {reviews.map((review, index) => (
-            <div key={index} className="bg-gray-100 p-4 rounded-lg shadow-sm">
+          {reviews.map((review) => (
+            <div
+              key={review.review_id}
+              className="bg-gray-100 p-4 rounded-lg shadow-sm"
+            >
               <p className="text-gray-800 italic">"{review.text}"</p>
               <p className="text-gray-600">
                 <span className="font-semibold">Rating:</span>{' '}
@@ -72,7 +74,11 @@ export default function CompanyDetail() {
               </p>
               <p className="text-gray-600">
                 <span className="font-semibold">Reviewer:</span>{' '}
-                {review.reviewer}
+                {review.user_name}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-semibold">Email:</span>{' '}
+                {review.user_email}
               </p>
             </div>
           ))}
