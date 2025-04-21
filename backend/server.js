@@ -9,6 +9,7 @@ import busRouter from './routes/bus.routes.js';
 import hotelRouter from './routes/hotel.routes.js';
 import bookingRouter from './routes/booking.routes.js';
 import companyRouter from './routes/company.routes.js';
+import reviewRouter from './routes/review.routes.js';
 
 config();
 const { Client } = pg;
@@ -31,13 +32,16 @@ await client.connect(); // connect to client
 // reset hotel statuses on server start
 async function resetHotelRoomStatus() {
   try {
-    const result = await client.query(`UPDATE HotelRoom SET status = 'Available'`);
-    console.log(`Reset success: ${result.rowCount} rooms updated to 'Available'`);
+    const result = await client.query(
+      `UPDATE HotelRoom SET status = 'Available'`
+    );
+    console.log(
+      `Reset success: ${result.rowCount} rooms updated to 'Available'`
+    );
   } catch (err) {
     console.error(' Failed to reset hotel statuses:', err);
   }
 }
-
 
 resetHotelRoomStatus(); // run the reset
 
@@ -49,7 +53,8 @@ app.use(
   hotelRouter,
   busRouter,
   bookingRouter,
-  companyRouter
+  companyRouter,
+  reviewRouter
 );
 
 // start the server
@@ -58,4 +63,3 @@ app.listen(port, () => {
 });
 
 export { app, client };
-

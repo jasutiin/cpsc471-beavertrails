@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState, useContext } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Booking {
   user_id: number;
@@ -37,15 +39,16 @@ interface Booking {
 }
 
 export default function User() {
-  const { user_id } = useParams<{ user_id: string }>();
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const { logout, user } = useAuth();
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const res = await fetch(
-          `http://localhost:8080/api/bookings/${user_id}`
+          `http://localhost:8080/api/bookings/${user.user_id}`
         );
         const data = await res.json();
         setBookings(data);
@@ -58,7 +61,12 @@ export default function User() {
     };
 
     fetchBookings();
-  }, [user_id]);
+  }, [user.user_id]);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/auth');
+  };
 
   const formatDateTime = (datetime: string | null) =>
     datetime ? new Date(datetime).toLocaleString() : 'N/A';
@@ -197,7 +205,17 @@ export default function User() {
 
   return (
     <div className="h-[calc(100vh-80px)] p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">Your Bookings</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Your Bookings</h1>
+        <Button
+          onClick={handleLogout}
+          variant="outline"
+          className="text-red-600 border-red-600 hover:bg-red-100"
+        >
+          Logout
+        </Button>
+      </div>
+
       {loading ? (
         <Skeleton className="w-full h-24 rounded-xl" />
       ) : bookings && bookings.length > 0 ? (

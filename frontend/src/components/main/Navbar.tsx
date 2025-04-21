@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
-interface NavbarProps {
-  userId: string | number;
-}
+export default function Navbar() {
+  const { user } = useAuth();
 
-export default function Navbar({ userId }: NavbarProps) {
   return (
     <nav className="sticky top-0 h-[80px] z-50 flex items-center justify-between px-6 py-4 border-b bg-white shadow-sm">
       <Link to="/">
@@ -15,12 +14,22 @@ export default function Navbar({ userId }: NavbarProps) {
           className="h-16 w-auto"
         />
       </Link>
-      <Link
-        to={`/users/${1}`}
-        className={cn('text-sm font-medium text-blue-600 hover:underline')}
-      >
-        User
-      </Link>
+
+      {user.user_id ? (
+        <Link
+          to={`/users/${user.user_id}`}
+          className={cn('text-sm font-medium text-blue-600 hover:underline')}
+        >
+          {user.user_email ?? 'User'}
+        </Link>
+      ) : (
+        <Link
+          to="/auth"
+          className={cn('text-sm font-medium text-blue-600 hover:underline')}
+        >
+          Login
+        </Link>
+      )}
     </nav>
   );
 }

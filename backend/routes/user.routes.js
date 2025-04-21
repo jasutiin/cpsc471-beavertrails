@@ -9,6 +9,7 @@ import {
   getUser,
   deleteUser,
   updateUser,
+  loginUser,
 } from '../controllers/user.controller.js';
 
 const userRouter = Router();
@@ -17,6 +18,7 @@ userRouter
   .get('/users', getUsers)
   .get('/users/:user_id', getUser)
   .put('/users/:user_id', updateUser)
+  .post('/auth/login', loginUser)
   .delete('/users/:user_id', deleteUser);
 
 export default userRouter;
