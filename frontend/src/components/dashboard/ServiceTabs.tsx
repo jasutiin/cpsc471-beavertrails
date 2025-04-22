@@ -11,17 +11,19 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import {
-  fetchFlights,
-  fetchBuses,
-  fetchHotelRooms,
-  fetchActivities,
+  getCompanyFlights,
+  getCompanyBuses,
+  getCompanyHotelRooms,
+  getCompanyActivities,
   Flight,
   Bus,
   HotelRoom,
   Activity,
-} from '@/api/services';
+} from '@/api/dashboard';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const ServiceTabs = () => {
+  const { company } = useAuth();
   const [activeTab, setActiveTab] = useState('flights');
   const [showModal, setShowModal] = useState(false);
   const [flights, setFlights] = useState<Flight[]>([]);
@@ -50,7 +52,7 @@ export const ServiceTabs = () => {
     status: '',
     name: '',
     description: '',
-    ageRestriction: '',
+    ageRestriction: false,
     startTime: new Date(),
     endTime: new Date(),
     signups: '',
@@ -58,14 +60,16 @@ export const ServiceTabs = () => {
 
   useEffect(() => {
     const loadData = async () => {
+      if (!company?.company_id) return;
+
       try {
         setLoading(true);
         const [flightsData, busesData, hotelRoomsData, activitiesData] =
           await Promise.all([
-            fetchFlights(),
-            fetchBuses(),
-            fetchHotelRooms(),
-            fetchActivities(),
+            getCompanyFlights(company.company_id),
+            getCompanyBuses(company.company_id),
+            getCompanyHotelRooms(company.company_id),
+            getCompanyActivities(company.company_id),
           ]);
         setFlights(flightsData);
         setBuses(busesData);
@@ -81,7 +85,7 @@ export const ServiceTabs = () => {
     };
 
     loadData();
-  }, []);
+  }, [company?.company_id]);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -122,7 +126,7 @@ export const ServiceTabs = () => {
       status: '',
       name: '',
       description: '',
-      ageRestriction: '',
+      ageRestriction: false,
       startTime: new Date(),
       endTime: new Date(),
       signups: '',
@@ -758,20 +762,25 @@ export const ServiceTabs = () => {
           ) : (
             <div className="grid gap-4">
               {flights.map((flight) => (
-                <div key={flight.id} className="p-4 border rounded-lg">
+                <div
+                  key={flight.servicetype_id}
+                  className="p-4 border rounded-lg"
+                >
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="font-semibold">
-                        {flight.departureCity} → {flight.arrivalCity}
+                        {flight.departure_city} → {flight.arrival_city}
                       </h3>
                       <p className="text-sm text-gray-500">
-                        {new Date(flight.departureTime).toLocaleString()} -{' '}
-                        {new Date(flight.arrivalTime).toLocaleString()}
+                        {new Date(flight.departure_time).toLocaleString()} -{' '}
+                        {new Date(flight.arrival_time).toLocaleString()}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{flight.price}</p>
-                      <p className="text-sm text-gray-500">{flight.class}</p>
+                      <p className="font-semibold">${flight.flight_price}</p>
+                      <p className="text-sm text-gray-500">
+                        {flight.flightclassoptions}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -786,22 +795,22 @@ export const ServiceTabs = () => {
           ) : (
             <div className="grid gap-4">
               {buses.map((bus) => (
-                <div key={bus.id} className="p-4 border rounded-lg">
+                <div key={bus.servicetype_id} className="p-4 border rounded-lg">
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="font-semibold">
-                        {bus.departureCity} → {bus.arrivalCity}
+                        {bus.departure_city} → {bus.arrival_city}
                       </h3>
                       <p className="text-sm text-gray-500">
-                        {new Date(bus.departureTime).toLocaleString()} -{' '}
-                        {new Date(bus.arrivalTime).toLocaleString()}
+                        {new Date(bus.departure_time).toLocaleString()} -{' '}
+                        {new Date(bus.arrival_time).toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-500">
-                        Seats: {bus.seats}
+                        Seats: {bus.seats_available}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{bus.price}</p>
+                      <p className="font-semibold">${bus.bus_price}</p>
                       <p className="text-sm text-gray-500">{bus.amenities}</p>
                     </div>
                   </div>
@@ -817,24 +826,29 @@ export const ServiceTabs = () => {
           ) : (
             <div className="grid gap-4">
               {hotelRooms.map((room) => (
-                <div key={room.id} className="p-4 border rounded-lg">
+                <div
+                  key={room.servicetype_id}
+                  className="p-4 border rounded-lg"
+                >
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="font-semibold">
-                        Room {room.roomNumber} - {room.roomType}
+                        Room {room.room_number} - {room.room_type}
                       </h3>
                       <p className="text-sm text-gray-500">
-                        Check-in: {new Date(room.checkIn).toLocaleString()}
+                        Check-in:{' '}
+                        {new Date(room.check_in_time).toLocaleString()}
                         <br />
-                        Check-out: {new Date(room.checkOut).toLocaleString()}
+                        Check-out:{' '}
+                        {new Date(room.check_out_time).toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {room.bedType} bed • {room.capacity} guests • Floor{' '}
-                        {room.floor}
+                        {room.bed_type} bed • {room.capacity} guests • Floor{' '}
+                        {room.floor_number}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{room.price}</p>
+                      <p className="font-semibold">${room.price}</p>
                       <p className="text-sm text-gray-500">{room.status}</p>
                     </div>
                   </div>
@@ -850,24 +864,24 @@ export const ServiceTabs = () => {
           ) : (
             <div className="grid gap-4">
               {activities.map((activity) => (
-                <div key={activity.id} className="p-4 border rounded-lg">
+                <div
+                  key={activity.servicetype_id}
+                  className="p-4 border rounded-lg"
+                >
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="font-semibold">{activity.name}</h3>
+                      <h3 className="font-semibold">{activity.description}</h3>
                       <p className="text-sm text-gray-500">
-                        {activity.description}
+                        {new Date(activity.start_time).toLocaleString()} -{' '}
+                        {new Date(activity.end_time).toLocaleString()}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {new Date(activity.startTime).toLocaleString()} -{' '}
-                        {new Date(activity.endTime).toLocaleString()}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Signups: {activity.signups} • Age:{' '}
-                        {activity.ageRestriction}
+                        Signups: {activity.signups} • Age Restriction:{' '}
+                        {activity.age_restriction ? 'Yes' : 'No'}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{activity.price}</p>
+                      <p className="font-semibold">${activity.price}</p>
                     </div>
                   </div>
                 </div>
