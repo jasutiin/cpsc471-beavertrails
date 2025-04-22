@@ -12,6 +12,7 @@ export default function AuthPage() {
     name: '',
     email: '',
     password: '',
+    phone: '',
   });
 
   const { login } = useAuth();
@@ -19,7 +20,7 @@ export default function AuthPage() {
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
-    setFormData({ name: '', email: '', password: '' });
+    setFormData({ name: '', email: '', password: '', phone: '' });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,17 +31,46 @@ export default function AuthPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const userData = {
-      email: formData.email,
-      password: formData.password,
-    };
+    try {
+      if (isLogin) {
+        const userData = {
+          email: formData.email,
+          password: formData.password,
+        };
 
-    login(userData);
-    navigate('/');
-    console.log(`${isLogin ? 'Logging in' : 'Signing up'} with:`, userData);
+        await login(userData);
+        navigate('/');
+        console.log('Logging in with:', userData);
+      } else {
+        const res = await fetch('http://localhost:8080/api/auth/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Signup failed');
+        }
+
+        await login({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        navigate('/');
+        console.log('Signed up with:', formData);
+      }
+    } catch (err: any) {
+      console.error(err.message);
+      alert(err.message);
+    }
   };
 
   return (
@@ -52,18 +82,32 @@ export default function AuthPage() {
           </h1>
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Your name"
-                  required
-                />
-              </div>
+              <>
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Your name"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="123-456-7890"
+                    required
+                  />
+                </div>
+              </>
             )}
             <div>
               <Label htmlFor="email">Email</Label>

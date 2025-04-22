@@ -59,6 +59,43 @@ export async function loginUser(req, res) {
   }
 }
 
+export async function signupUser(req, res) {
+  const { name, phone_number, email, password } = req.body;
+  console.log(name, phone_number, email, password);
+
+  if (!name || !email || !password) {
+    return res
+      .status(400)
+      .json({ error: 'Name, email, and password are required.' });
+  }
+
+  try {
+    const checkQuery = {
+      text: 'SELECT * FROM users WHERE email = $1;',
+      values: [email],
+    };
+    const existingUser = await client.query(checkQuery);
+
+    if (existingUser.rows.length > 0) {
+      return res.status(409).json({ error: 'Email already exists.' });
+    }
+
+    const insertQuery = {
+      text: `
+        INSERT INTO users (name, phone_number, email, hashed_password)
+        VALUES ($1, $2, $3, $4);
+      `,
+      values: [name, phone_number, email, password],
+    };
+
+    await client.query(insertQuery);
+    res.status(201).json({ message: 'User signed up successfully.' });
+  } catch (err) {
+    console.error('Signup error:', err);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+}
+
 export async function deleteUser(req, res) {
   const query = {
     text: `DELETE FROM "users" WHERE user_id = $1`,
