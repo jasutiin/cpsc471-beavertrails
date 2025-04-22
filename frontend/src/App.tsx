@@ -11,6 +11,7 @@ import ActivityDetail from '@/pages/activities/ActivityDetail';
 import CompanyDetail from './pages/companies/CompanyDetail';
 import Authentication from './pages/Authentication';
 import User from './pages/User';
+import Dashboard from './pages/Dashboard';
 
 import { Routes, Route } from 'react-router-dom';
 
@@ -20,6 +21,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/flights" element={<Flights />} />
         <Route path="/flights/:servicetype_id" element={<FlightDetail />} />
         <Route path="/buses" element={<Buses />} />
