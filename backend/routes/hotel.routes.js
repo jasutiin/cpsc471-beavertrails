@@ -11,15 +11,15 @@ import {
   getHotelBookingsOfUser,
   getAllHotels,
   getHotelById,
-  bookHotel
+  bookHotel,
 } from '../controllers/hotel.controller.js';
 
 const hotelRouter = Router();
 
 hotelRouter
-  .get('/users/:user_id/hotels', getHotelBookingsOfUser)  // User's hotel bookings
-  .get('/hotels', getAllHotels)                            // All or filtered hotel listings
-  .get('/hotels/:servicetype_id', getHotelById)            // Get one hotel room by ID
-  .post('/bookings/hotels', bookHotel);                    // Book a hotel room
+  .get('/users/:user_id/hotels', getHotelBookingsOfUser)
+  .get('/hotels', getAllHotels)
+  .get('/hotels/:servicetype_id', getHotelById)
+  .post('/bookings/hotels', bookHotel);
 
 export default hotelRouter;
