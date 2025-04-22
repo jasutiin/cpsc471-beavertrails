@@ -1,35 +1,48 @@
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function FlightDetail() {
   const { servicetype_id } = useParams();
   const navigate = useNavigate();
-  const { state } = useLocation();
   const { user } = useAuth();
 
   const [seats, setSeats] = useState([]);
+  const [flight, setFlight] = useState<any>(null);
+  const [discount, setDiscount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
   useEffect(() => {
-    const fetchSeats = async () => {
+    const fetchFlightDetails = async () => {
       try {
-        const res = await fetch(
-          `http://localhost:8080/api/flights/${servicetype_id}/seats`
-        );
-        const data = await res.json();
-        setSeats(data);
+        const [flightRes, seatsRes, couponRes] = await Promise.all([
+          fetch(`http://localhost:8080/api/flights/${servicetype_id}`),
+          fetch(`http://localhost:8080/api/flights/${servicetype_id}/seats`),
+          fetch(`http://localhost:8080/api/coupons/${servicetype_id}`)
+        ]);
+
+        const flightData = await flightRes.json();
+        const seatsData = await seatsRes.json();
+        setFlight(flightData);
+        setSeats(seatsData);
+
+        if (couponRes.ok) {
+          const couponData = await couponRes.json();
+          setDiscount(couponData.discount);
+        } else {
+          console.log('No coupon found for this flight');
+        }
       } catch (err) {
-        console.error('Error fetching seats:', err);
+        console.error('Error fetching flight info:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSeats();
+    fetchFlightDetails();
   }, [servicetype_id]);
 
   const handleSeatClick = (seat) => {
@@ -46,7 +59,7 @@ export default function FlightDetail() {
         },
         body: JSON.stringify({
           user_id: user.user_id,
-          servicetype_id: servicetype_id,
+          servicetype_id,
           seat_number: selectedSeat?.seat_number,
         }),
       });
@@ -69,6 +82,14 @@ export default function FlightDetail() {
     navigate('/');
   };
 
+  const rawPrice = Number(flight?.flight_price);
+  const finalPrice = discount && !isNaN(rawPrice)
+    ? rawPrice - discount
+    : rawPrice;
+
+  if (loading) return <p className="p-6">Loading flight details...</p>;
+  if (!flight) return <p className="p-6 text-red-500">Flight not found.</p>;
+
   return (
     <div className="h-[calc(100vh-80px)] p-6 flex justify-center">
       <div className="w-full max-w-5xl space-y-6">
@@ -79,29 +100,29 @@ export default function FlightDetail() {
           ← Back
         </button>
 
-        <h2 className="text-xl font-semibold text-gray-800">
-          Flight Information
-        </h2>
+        <h2 className="text-xl font-semibold text-gray-800">Flight Information</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-6 rounded shadow">
             <div className="space-y-2 text-gray-700">
-              <p>
-                <span className="font-medium">From:</span> {state?.departCity}
-              </p>
-              <p>
-                <span className="font-medium">To:</span> {state?.arrivalCity}
-              </p>
-              <p>
-                <span className="font-medium">Departure:</span>{' '}
-                {new Date(state?.departTime).toLocaleString()}
-              </p>
-              <p>
-                <span className="font-medium">Arrival:</span>{' '}
-                {new Date(state?.arrivalTime).toLocaleString()}
-              </p>
-              <p>
-                <span className="font-medium">Price:</span> ${state?.price}
+              <p><span className="font-medium">From:</span> {flight.departure_city}</p>
+              <p><span className="font-medium">To:</span> {flight.arrival_city}</p>
+              <p><span className="font-medium">Departure:</span> {new Date(flight.departure_time).toLocaleString()}</p>
+              <p><span className="font-medium">Arrival:</span> {new Date(flight.arrival_time).toLocaleString()}</p>
+              <p className="text-blue-600 font-semibold text-lg">
+                {typeof rawPrice === 'number' && !isNaN(rawPrice) ? (
+                  discount ? (
+                    <>
+                      <span className="line-through text-gray-500 mr-2">${rawPrice.toFixed(2)}</span>
+                      ${finalPrice.toFixed(2)}{' '}
+                      <span className="text-green-600 text-sm">(You save ${discount.toFixed(2)}!)</span>
+                    </>
+                  ) : (
+                    `$${rawPrice.toFixed(2)}`
+                  )
+                ) : (
+                  <span className="text-red-500">Price unavailable</span>
+                )}
               </p>
             </div>
           </div>
@@ -130,9 +151,7 @@ export default function FlightDetail() {
         {showModal && (
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 shadow-lg w-[90%] max-w-sm text-center space-y-4">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Confirm Booking
-              </h2>
+              <h2 className="text-lg font-semibold text-gray-800">Confirm Booking</h2>
               <p className="text-gray-700">
                 Would you like to book this flight with seat{' '}
                 <span className="font-bold">{selectedSeat?.seat_number}</span>?
@@ -158,9 +177,7 @@ export default function FlightDetail() {
         {bookingConfirmed && (
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 shadow-lg w-[90%] max-w-sm text-center space-y-4">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Booking Confirmed
-              </h2>
+              <h2 className="text-lg font-semibold text-gray-800">Booking Confirmed</h2>
               <p className="text-gray-700">
                 You have successfully booked seat{' '}
                 <span className="font-bold">{selectedSeat?.seat_number}</span>.

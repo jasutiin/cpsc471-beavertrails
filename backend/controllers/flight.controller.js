@@ -1,11 +1,6 @@
-/*
-this is where all the flight related functions are. some of the functions
-include getting all flights, flights of a specific user, etc. these functions are called
-by the endpoints defined in flight.routes.js
-*/
-
 import { client } from '../server.js';
 
+// Get all flight bookings made by a user
 export async function getFlightBookingsOfUser(req, res) {
   const query = {
     text: `
@@ -15,14 +10,21 @@ export async function getFlightBookingsOfUser(req, res) {
       JOIN Payment p ON pbs.Payment_Id = p.Payment_Id
       JOIN User_Makes_Payment ump ON p.Payment_Id = ump.Payment_Id
       JOIN Users u ON ump.User_Id = u.User_Id
-      WHERE u.User_Id = $1;`,
+      WHERE u.User_Id = $1;
+    `,
     values: [req.params.user_id],
   };
 
-  const result = await client.query(query);
-  res.send(result.rows);
+  try {
+    const result = await client.query(query);
+    res.send(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error fetching flight bookings');
+  }
 }
 
+// Get flights based on optional filters
 export async function getFlights(req, res) {
   const { departure_date, departure_city, arrival_city } = req.query;
 
@@ -55,7 +57,7 @@ export async function getFlights(req, res) {
   }
 
   if (conditions.length > 0) {
-    query_text += ` WHERE ` + conditions.join(' AND ');
+    query_text += ' WHERE ' + conditions.join(' AND ');
   }
 
   query_text += ';';
@@ -73,19 +75,32 @@ export async function getFlights(req, res) {
   }
 }
 
+// Fetch a flight by its service type ID
 export async function getFlightById(req, res) {
   const query = {
     text: `
       SELECT f.*
       FROM Flight f
-      WHERE f.ServiceType_Id = $1;`,
+      WHERE f.ServiceType_Id = $1;
+    `,
     values: [req.params.flight_id],
   };
 
-  const result = await client.query(query);
-  res.send(result.rows);
+  try {
+    const result = await client.query(query);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Flight not found' });
+    }
+
+    res.json(result.rows[0]); // Return just the object, not the array
+  } catch (err) {
+    console.error('Error fetching flight by ID:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 }
 
+// Fetch available seats for a flight
 export async function getSeatsOfFlight(req, res) {
   const { flightclass } = req.query;
   const { flight_id } = req.params;
@@ -93,8 +108,8 @@ export async function getSeatsOfFlight(req, res) {
   let query_text = `
     SELECT fs.*
     FROM FlightSeat fs
-    WHERE fs.ServiceType_Id = $1
-    AND fs.Is_Taken = FALSE`;
+    WHERE fs.ServiceType_Id = $1 AND fs.Is_Taken = FALSE
+  `;
 
   const query_values = [flight_id];
 
@@ -105,13 +120,20 @@ export async function getSeatsOfFlight(req, res) {
 
   query_text += ';';
 
-  const result = await client.query({
-    text: query_text,
-    values: query_values,
-  });
-  res.send(result.rows);
+  try {
+    const result = await client.query({
+      text: query_text,
+      values: query_values,
+    });
+
+    res.send(result.rows);
+  } catch (err) {
+    console.error('Error fetching seats:', err);
+    res.status(500).send('Failed to fetch available seats');
+  }
 }
 
+// Book a seat in a flight
 export async function bookSeatInFlight(req, res) {
   const { user_id, servicetype_id, seat_number } = req.body;
 
@@ -130,27 +152,24 @@ export async function bookSeatInFlight(req, res) {
       throw new Error('Failed to generate payment_id');
     }
 
-    const paymentBooksServiceQuery = `
-      INSERT INTO Payment_Books_Service (Payment_Id, ServiceType_Id)
-      VALUES ($1, $2);
-    `;
-    await client.query(paymentBooksServiceQuery, [payment_id, servicetype_id]);
+    await client.query(
+      `INSERT INTO Payment_Books_Service (Payment_Id, ServiceType_Id) VALUES ($1, $2);`,
+      [payment_id, servicetype_id]
+    );
 
-    const userMakesPaymentQuery = `
-      INSERT INTO User_Makes_Payment (User_Id, Payment_Id)
-      VALUES ($1, $2);
-    `;
-    await client.query(userMakesPaymentQuery, [user_id, payment_id]);
+    await client.query(
+      `INSERT INTO User_Makes_Payment (User_Id, Payment_Id) VALUES ($1, $2);`,
+      [user_id, payment_id]
+    );
 
-    const updateSeatQuery = `
+    const updateResult = await client.query(
+      `
       UPDATE FlightSeat
       SET Is_Taken = TRUE
       WHERE ServiceType_Id = $1 AND Seat_Number = $2 AND Is_Taken = FALSE;
-    `;
-    const updateResult = await client.query(updateSeatQuery, [
-      servicetype_id,
-      seat_number,
-    ]);
+    `,
+      [servicetype_id, seat_number]
+    );
 
     if (updateResult.rowCount === 0) {
       throw new Error('Seat is already taken or does not exist.');
@@ -164,7 +183,28 @@ export async function bookSeatInFlight(req, res) {
     });
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error(error);
+    console.error('Booking error:', error);
     res.status(500).json({ error: error.message });
+  }
+}
+
+// redundant duplicate of getFlightById – delete or consolidate usage
+export async function getFlightByServiceId(req, res) {
+  const { servicetype_id } = req.params;
+
+  try {
+    const result = await client.query(
+      `SELECT * FROM Flight WHERE servicetype_id = $1`,
+      [servicetype_id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Flight not found' });
+    }
+
+    res.json(result.rows[0]); 
+  } catch (err) {
+    console.error('Error fetching flight:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 }
