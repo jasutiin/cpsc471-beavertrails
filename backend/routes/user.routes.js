@@ -19,8 +19,8 @@ userRouter
   .get('/users', getUsers)
   .get('/users/:user_id', getUser)
   .put('/users/:user_id', updateUser)
-  .post('/auth/login', loginUser)
-  .post('/auth/signup', signupUser)
+  .post('/auth/user/login', loginUser)
+  .post('/auth/user/signup', signupUser)
   .delete('/users/:user_id', deleteUser);
 
 export default userRouter;

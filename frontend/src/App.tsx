@@ -21,7 +21,7 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/:company_id" element={<Dashboard />} />
         <Route path="/flights" element={<Flights />} />
         <Route path="/flights/:servicetype_id" element={<FlightDetail />} />
         <Route path="/buses" element={<Buses />} />

@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [isCompany, setIsCompany] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,13 +16,22 @@ export default function AuthPage() {
     phone: '',
   });
 
-  const { login } = useAuth();
+  const {
+    loginAsUser,
+    loginAsCompany,
+    signUpAsUser,
+    signUpAsCompany,
+    user,
+    company,
+  } = useAuth();
   const navigate = useNavigate();
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setFormData({ name: '', email: '', password: '', phone: '' });
   };
+
+  const toggleRole = () => setIsCompany(!isCompany);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -36,40 +46,46 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
-        const userData = {
+        const credentials = {
           email: formData.email,
           password: formData.password,
         };
 
-        await login(userData);
-        navigate('/');
-        console.log('Logging in with:', userData);
-      } else {
-        const res = await fetch('http://localhost:8080/api/auth/signup', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.error || 'Signup failed');
+        if (isCompany) {
+          const companyData = await loginAsCompany(credentials);
+          if (companyData.company_id) {
+            navigate(`/dashboard/${companyData.company_id}`);
+          }
+        } else {
+          await loginAsUser(credentials);
+          navigate('/');
         }
-
-        await login({
+      } else {
+        const signupData = {
+          name: formData.name,
           email: formData.email,
           password: formData.password,
-        });
+          phone: formData.phone,
+        };
 
-        navigate('/');
-        console.log('Signed up with:', formData);
+        if (isCompany) {
+          const companyData = await signUpAsCompany(signupData);
+          if (companyData.company_id) {
+            navigate(`/dashboard/${companyData.company_id}`);
+          }
+        } else {
+          await signUpAsUser(signupData);
+          navigate('/');
+        }
       }
-    } catch (err: any) {
-      console.error(err.message);
-      alert(err.message);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message);
+        alert(error.message);
+      } else {
+        console.error('An unknown error occurred');
+        alert('An unknown error occurred');
+      }
     }
   };
 
@@ -77,26 +93,47 @@ export default function AuthPage() {
     <div className="h-[calc(100vh-80px)] flex items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardContent className="p-6">
-          <h1 className="text-2xl font-semibold mb-4 text-center">
-            {isLogin ? 'Login' : 'Sign Up'}
+          <h1 className="text-2xl font-semibold mb-2 text-center">
+            {isLogin
+              ? isCompany
+                ? 'Login as Company'
+                : 'Login as User'
+              : isCompany
+              ? 'Sign Up as Company'
+              : 'Sign Up as User'}
           </h1>
+
+          <div className="mb-4 text-center text-sm">
+            <button
+              type="button"
+              onClick={toggleRole}
+              className="text-blue-600 hover:underline"
+            >
+              {isCompany ? 'Switch to User' : 'Switch to Company'}
+            </button>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <>
                 <div>
-                  <Label htmlFor="name">Name</Label>
+                  <Label htmlFor="name">
+                    {isCompany ? 'Company Name' : 'Name'}
+                  </Label>
                   <Input
                     id="name"
                     name="name"
                     type="text"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder="Your name"
+                    placeholder={isCompany ? 'Company name' : 'Your name'}
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">
+                    {isCompany ? 'Company Phone' : 'Phone'}
+                  </Label>
                   <Input
                     id="phone"
                     name="phone"
@@ -110,14 +147,18 @@ export default function AuthPage() {
               </>
             )}
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">
+                {isCompany ? 'Company Email' : 'Email'}
+              </Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="you@example.com"
+                placeholder={
+                  isCompany ? 'company@example.com' : 'you@example.com'
+                }
                 required
               />
             </div>
@@ -134,7 +175,13 @@ export default function AuthPage() {
               />
             </div>
             <Button type="submit" className="w-full">
-              {isLogin ? 'Login' : 'Sign Up'}
+              {isLogin
+                ? isCompany
+                  ? 'Login as Company'
+                  : 'Login as User'
+                : isCompany
+                ? 'Sign Up as Company'
+                : 'Sign Up as User'}
             </Button>
           </form>
 
