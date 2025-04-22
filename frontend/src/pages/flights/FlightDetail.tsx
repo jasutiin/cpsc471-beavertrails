@@ -21,7 +21,7 @@ export default function FlightDetail() {
         const [flightRes, seatsRes, couponRes] = await Promise.all([
           fetch(`http://localhost:8080/api/flights/${servicetype_id}`),
           fetch(`http://localhost:8080/api/flights/${servicetype_id}/seats`),
-          fetch(`http://localhost:8080/api/coupons/${servicetype_id}`)
+          fetch(`http://localhost:8080/api/coupons/${servicetype_id}`),
         ]);
 
         const flightData = await flightRes.json();
@@ -31,7 +31,7 @@ export default function FlightDetail() {
 
         if (couponRes.ok) {
           const couponData = await couponRes.json();
-          setDiscount(couponData.discount);
+          setDiscount(Number(couponData.discount));
         } else {
           console.log('No coupon found for this flight');
         }
@@ -83,9 +83,8 @@ export default function FlightDetail() {
   };
 
   const rawPrice = Number(flight?.flight_price);
-  const finalPrice = discount && !isNaN(rawPrice)
-    ? rawPrice - discount
-    : rawPrice;
+  const finalPrice =
+    discount && !isNaN(rawPrice) ? rawPrice - discount : rawPrice;
 
   if (loading) return <p className="p-6">Loading flight details...</p>;
   if (!flight) return <p className="p-6 text-red-500">Flight not found.</p>;
@@ -100,22 +99,41 @@ export default function FlightDetail() {
           ← Back
         </button>
 
-        <h2 className="text-xl font-semibold text-gray-800">Flight Information</h2>
+        <h2 className="text-xl font-semibold text-gray-800">
+          Flight Information
+        </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-6 rounded shadow">
             <div className="space-y-2 text-gray-700">
-              <p><span className="font-medium">From:</span> {flight.departure_city}</p>
-              <p><span className="font-medium">To:</span> {flight.arrival_city}</p>
-              <p><span className="font-medium">Departure:</span> {new Date(flight.departure_time).toLocaleString()}</p>
-              <p><span className="font-medium">Arrival:</span> {new Date(flight.arrival_time).toLocaleString()}</p>
+              <p>
+                <span className="font-medium">From:</span>{' '}
+                {flight.departure_city}
+              </p>
+              <p>
+                <span className="font-medium">To:</span> {flight.arrival_city}
+              </p>
+              <p>
+                <span className="font-medium">Departure:</span>{' '}
+                {new Date(flight.departure_time).toLocaleString()}
+              </p>
+              <p>
+                <span className="font-medium">Arrival:</span>{' '}
+                {new Date(flight.arrival_time).toLocaleString()}
+              </p>
               <p className="text-blue-600 font-semibold text-lg">
                 {typeof rawPrice === 'number' && !isNaN(rawPrice) ? (
                   discount ? (
                     <>
-                      <span className="line-through text-gray-500 mr-2">${rawPrice.toFixed(2)}</span>
+                      <span className="line-through text-gray-500 mr-2">
+                        ${rawPrice.toFixed(2)}
+                      </span>
                       ${finalPrice.toFixed(2)}{' '}
-                      <span className="text-green-600 text-sm">(You save ${discount.toFixed(2)}!)</span>
+                      {typeof discount === 'number' && !isNaN(discount) && (
+                        <span className="text-green-600 text-sm">
+                          (You save ${discount.toFixed(2)}!)
+                        </span>
+                      )}
                     </>
                   ) : (
                     `$${rawPrice.toFixed(2)}`
@@ -151,7 +169,9 @@ export default function FlightDetail() {
         {showModal && (
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 shadow-lg w-[90%] max-w-sm text-center space-y-4">
-              <h2 className="text-lg font-semibold text-gray-800">Confirm Booking</h2>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Confirm Booking
+              </h2>
               <p className="text-gray-700">
                 Would you like to book this flight with seat{' '}
                 <span className="font-bold">{selectedSeat?.seat_number}</span>?
@@ -177,7 +197,9 @@ export default function FlightDetail() {
         {bookingConfirmed && (
           <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 shadow-lg w-[90%] max-w-sm text-center space-y-4">
-              <h2 className="text-lg font-semibold text-gray-800">Booking Confirmed</h2>
+              <h2 className="text-lg font-semibold text-gray-800">
+                Booking Confirmed
+              </h2>
               <p className="text-gray-700">
                 You have successfully booked seat{' '}
                 <span className="font-bold">{selectedSeat?.seat_number}</span>.
