@@ -193,7 +193,7 @@ export default function User() {
             <CardContent className="p-4 space-y-1">
               <div className="flex items-center gap-2 text-lg font-semibold">
                 <Link
-                  to={`/companies/${b.servicetype_id}`}
+                  to={`/companies/${b.company_id}`}
                   className="text-blue-600 hover:underline"
                 >
                   {b.company_name ?? 'Unknown Company'}

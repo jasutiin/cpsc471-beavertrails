@@ -11,7 +11,7 @@ export async function getUserFlightBookings(req, res) {
 
   try {
     const query = `
-      SELECT F.*, 'flight' AS service_type, C.Company_Name
+      SELECT F.*, 'flight' AS service_type, C.Company_Name, C.Company_Id
       FROM Users U
       JOIN User_Makes_Payment UMP ON U.User_Id = UMP.User_Id
       JOIN Payment P ON UMP.Payment_Id = P.Payment_Id
@@ -34,7 +34,7 @@ export async function getUserBusBookings(req, res) {
 
   try {
     const query = `
-      SELECT B.*, 'bus' AS service_type, C.Company_Name
+      SELECT B.*, 'bus' AS service_type, C.Company_Name, C.Company_Id
       FROM Users U
       JOIN User_Makes_Payment UMP ON U.User_Id = UMP.User_Id
       JOIN Payment P ON UMP.Payment_Id = P.Payment_Id
@@ -57,7 +57,7 @@ export async function getUserHotelBookings(req, res) {
 
   try {
     const query = `
-      SELECT HR.*, 'hotel' AS service_type, C.Company_Name
+      SELECT HR.*, 'hotel' AS service_type, C.Company_Name, C.Company_Id
       FROM Users AS U
       JOIN User_Makes_Payment AS UMP ON U.User_Id = UMP.User_Id
       JOIN Payment AS P ON UMP.Payment_Id = P.Payment_Id
@@ -80,11 +80,13 @@ export async function getUserActivityBookings(req, res) {
 
   try {
     const query = `
-      SELECT A.*, 'activity' AS service_type
+      SELECT A.*, 'activity' AS service_type, C.Company_Name, C.Company_Id
       FROM Users AS U
       JOIN User_Makes_Payment AS UMP ON U.User_Id = UMP.User_Id
       JOIN Payment AS P ON UMP.Payment_Id = P.Payment_Id
       JOIN Activity AS A ON P.ServiceType_Id = A.ServiceType_Id
+      JOIN ActivityCompany_Offers_Activity AS AC ON A.ServiceType_Id = AC.ServiceType_Id
+      JOIN Company AS C ON AC.Company_Id = C.Company_Id
       WHERE U.User_Id = $1;
     `;
 
