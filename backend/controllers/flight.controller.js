@@ -1,6 +1,6 @@
 import { client } from '../server.js';
 
-// Get all flight bookings made by a user
+// get all flight bookings made by a user
 export async function getFlightBookingsOfUser(req, res) {
   const query = {
     text: `
@@ -24,7 +24,7 @@ export async function getFlightBookingsOfUser(req, res) {
   }
 }
 
-// Get flights based on optional filters
+// get flights based on optional filters
 export async function getFlights(req, res) {
   const { departure_date, departure_city, arrival_city } = req.query;
 
@@ -75,7 +75,7 @@ export async function getFlights(req, res) {
   }
 }
 
-// Fetch a flight by its service type ID
+// fetch a flight by its service type ID
 export async function getFlightById(req, res) {
   const query = {
     text: `
@@ -100,7 +100,7 @@ export async function getFlightById(req, res) {
   }
 }
 
-// Fetch available seats for a flight
+// fetch available seats for a flight
 export async function getSeatsOfFlight(req, res) {
   const { flightclass } = req.query;
   const { flight_id } = req.params;
@@ -133,7 +133,7 @@ export async function getSeatsOfFlight(req, res) {
   }
 }
 
-// Book a seat in a flight
+// book a seat in a flight
 export async function bookSeatInFlight(req, res) {
   const { user_id, servicetype_id, seat_number } = req.body;
 
@@ -185,26 +185,5 @@ export async function bookSeatInFlight(req, res) {
     await client.query('ROLLBACK');
     console.error('Booking error:', error);
     res.status(500).json({ error: error.message });
-  }
-}
-
-// redundant duplicate of getFlightById – delete or consolidate usage
-export async function getFlightByServiceId(req, res) {
-  const { servicetype_id } = req.params;
-
-  try {
-    const result = await client.query(
-      `SELECT * FROM Flight WHERE servicetype_id = $1`,
-      [servicetype_id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'Flight not found' });
-    }
-
-    res.json(result.rows[0]); 
-  } catch (err) {
-    console.error('Error fetching flight:', err);
-    res.status(500).json({ message: 'Server error' });
   }
 }

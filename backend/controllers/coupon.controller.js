@@ -1,6 +1,6 @@
 import { client } from '../server.js';
 
-// Works for activities, flights, buses, hotels etc.
+// works for activities, flights, buses, hotels etc.
 export async function getCouponByServiceId(req, res) {
   const { servicetype_id } = req.params;
 
@@ -25,4 +25,3 @@ export async function getCouponByServiceId(req, res) {
     res.status(500).json({ message: 'Server error' });
   }
 }
-
