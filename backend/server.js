@@ -12,6 +12,7 @@ import companyRouter from './routes/company.routes.js';
 import reviewRouter from './routes/review.routes.js';
 import activityRouter from './routes/activity.routes.js';
 import couponRouter from './routes/coupon.routes.js';
+import dashboardRouter from './routes/dashboard.routes.js';
 
 config();
 const { Client } = pg;
@@ -34,7 +35,9 @@ async function resetHotelRoomStatus() {
     const result = await client.query(
       `UPDATE HotelRoom SET status = 'Available'`
     );
-    console.log(`Reset success: ${result.rowCount} hotel rooms set to 'Available'`);
+    console.log(
+      `Reset success: ${result.rowCount} hotel rooms set to 'Available'`
+    );
   } catch (err) {
     console.error('Failed to reset hotel statuses:', err);
   }
@@ -43,10 +46,10 @@ async function resetHotelRoomStatus() {
 // Reset activity statuses
 async function resetActivityStatus() {
   try {
-    const result = await client.query(
-      `UPDATE Activity SET signups = 0`
+    const result = await client.query(`UPDATE Activity SET signups = 0`);
+    console.log(
+      `Reset success: ${result.rowCount} activities had signups reset`
     );
-    console.log(`Reset success: ${result.rowCount} activities had signups reset`);
   } catch (err) {
     console.error('Failed to reset activity signups:', err);
   }
@@ -67,7 +70,8 @@ app.use(
   companyRouter,
   reviewRouter,
   activityRouter,
-  couponRouter 
+  couponRouter,
+  dashboardRouter
 );
 
 // Start server
