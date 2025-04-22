@@ -8,12 +8,21 @@ import {
 
 const dashboardRouter = Router();
 
-dashboardRouter.get('/company/:company_id/flights', getCompanyFlights);
+dashboardRouter.get(
+  '/dashboard/company/:company_id/flights',
+  getCompanyFlights
+);
 
-dashboardRouter.get('/company/:company_id/buses', getCompanyBuses);
+dashboardRouter.get('/dashboard/company/:company_id/buses', getCompanyBuses);
 
-dashboardRouter.get('/company/:company_id/hotel-rooms', getCompanyHotelRooms);
+dashboardRouter.get(
+  '/dashboard/company/:company_id/hotel-rooms',
+  getCompanyHotelRooms
+);
 
-dashboardRouter.get('/company/:company_id/activities', getCompanyActivities);
+dashboardRouter.get(
+  '/dashboard/company/:company_id/activities',
+  getCompanyActivities
+);
 
 export default dashboardRouter;

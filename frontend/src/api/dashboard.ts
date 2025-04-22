@@ -8,6 +8,7 @@ export interface Flight {
   arrival_time: string;
   flightclassoptions: string;
   flight_price: number;
+  company_name: string;
 }
 
 export interface Bus {
@@ -20,6 +21,7 @@ export interface Bus {
   capacity: number;
   bus_price: number;
   amenities: string;
+  company_name: string;
 }
 
 export interface HotelRoom {
@@ -35,6 +37,7 @@ export interface HotelRoom {
   amenities: string;
   floor_number: number;
   status: string;
+  company_name: string;
 }
 
 export interface Activity {
@@ -42,11 +45,12 @@ export interface Activity {
   description: string;
   price: number;
   capacity: number;
-  age_restriction: number;
+  age_restriction: boolean;
   start_time: string;
   end_time: string;
   signups: number;
   city: string;
+  company_name: string;
 }
 
 // GET functions

@@ -35,7 +35,6 @@ export default function Dashboard() {
           Logout
         </Button>
       </div>
-      <Stats />
       <ServiceTabs />
     </div>
   );
