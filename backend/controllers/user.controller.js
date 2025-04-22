@@ -23,7 +23,6 @@ export async function getUser(req, res) {
 
 export async function loginUser(req, res) {
   const { email, password } = req.body;
-  console.log(email, password);
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });

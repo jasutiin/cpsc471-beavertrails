@@ -1,60 +1,49 @@
-import { useEffect, useState, useContext } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface Booking {
-  user_id: number;
-  payment_id: number;
-  servicetype_id: number;
-  service_type: string;
-  departure_city: string | null;
-  arrival_city: string | null;
-  departure_time: string | null;
-  arrival_time: string | null;
-  flightclassoptions: string | null;
-  flight_price: number | null;
-  bus_price: number | null;
-  bus_amenities: string | null;
-  room_number: string | null;
-  room_type: string | null;
-  check_in_time: string | null;
-  check_out_time: string | null;
-  hotel_price: number | null;
-  bed_type: string | null;
-  hotel_city: string | null;
-  hotel_capacity: number | null;
-  floor_number: number | null;
-  room_status: string | null;
-  activity_description: string | null;
-  activity_price: number | null;
-  activity_capacity: number | null;
-  age_restriction: boolean | null;
-  activity_start: string | null;
-  activity_end: string | null;
-  company_name: string | null;
-  company_id: number | null;
-}
-
 export default function User() {
   const navigate = useNavigate();
-  const [bookings, setBookings] = useState<Booking[] | null>(null);
-  const [loading, setLoading] = useState(true);
   const { logout, user } = useAuth();
+  console.log(user);
+
+  const [loading, setLoading] = useState(true);
+  const [flightBookings, setFlightBookings] = useState<Booking[]>([]);
+  const [busBookings, setBusBookings] = useState<Booking[]>([]);
+  const [hotelBookings, setHotelBookings] = useState<Booking[]>([]);
+  const [activityBookings, setActivityBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
     const fetchBookings = async () => {
+      setLoading(true);
       try {
-        const res = await fetch(
-          `http://localhost:8080/api/bookings/${user.user_id}`
-        );
-        const data = await res.json();
-        setBookings(data);
+        const [flightsRes, busesRes, hotelsRes] = await Promise.all([
+          fetch(`http://localhost:8080/api/bookings/flights/${user.user_id}`),
+          fetch(`http://localhost:8080/api/bookings/buses/${user.user_id}`),
+          fetch(`http://localhost:8080/api/bookings/hotels/${user.user_id}`),
+          // fetch(
+          //   `http://localhost:8080/api/bookings/activities/${user.user_id}`
+          // ),
+        ]);
+
+        const [flights, buses, hotels, activities] = await Promise.all([
+          flightsRes.json(),
+          busesRes.json(),
+          hotelsRes.json(),
+          // activitiesRes.json(),
+        ]);
+
+        console.log(flights);
+
+        setFlightBookings(flights);
+        setBusBookings(buses);
+        setHotelBookings(hotels);
+        // setActivityBookings(activities);
       } catch (err) {
-        console.error('Failed to fetch bookings:', err);
-        setBookings([]);
+        console.error('Failed to fetch one or more booking types:', err);
       } finally {
         setLoading(false);
       }
@@ -153,20 +142,11 @@ export default function User() {
             </div>
             <div className="flex gap-4">
               <p>
-                <strong>City:</strong> {b.hotel_city}
-              </p>
-              <p>
-                <strong>Capacity:</strong> {b.hotel_capacity}
-              </p>
-              <p>
-                <strong>Floor:</strong> {b.floor_number}
+                <strong>City:</strong> {b.city}
               </p>
             </div>
             <p>
-              <strong>Status:</strong> {b.room_status}
-            </p>
-            <p>
-              <strong>Price:</strong> ${b.hotel_price}
+              <strong>Price:</strong> ${b.price}
             </p>
           </>
         );
@@ -203,8 +183,35 @@ export default function User() {
     }
   };
 
+  const renderSection = (title: string, bookings: Booking[]) => {
+    if (bookings.length === 0) return null;
+    return (
+      <div className="space-y-2">
+        <h2 className="text-xl font-bold">{title}</h2>
+        {bookings.map((b) => (
+          <Card key={b.servicetype_id}>
+            <CardContent className="p-4 space-y-1">
+              <div className="flex items-center gap-2 text-lg font-semibold">
+                <Link
+                  to={`/companies/${b.servicetype_id}`}
+                  className="text-blue-600 hover:underline"
+                >
+                  {b.company_name ?? 'Unknown Company'}
+                </Link>
+              </div>
+              <p className="text-sm text-gray-500">
+                <strong>Service Type:</strong> {b.service_type}
+              </p>
+              {renderBookingDetails(b)}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <div className="h-[calc(100vh-80px)] p-6 space-y-4">
+    <div className="h-[calc(100vh-80px)] p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Your Bookings</h1>
         <Button
@@ -218,31 +225,13 @@ export default function User() {
 
       {loading ? (
         <Skeleton className="w-full h-24 rounded-xl" />
-      ) : bookings && bookings.length > 0 ? (
-        bookings.map((b) => (
-          <Card key={b.payment_id}>
-            <CardContent className="p-4 space-y-1">
-              <div className="flex items-center gap-2 text-xl font-semibold">
-                {b.company_id ? (
-                  <Link
-                    to={`/companies/${b.company_id}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {b.company_name ?? 'Unknown Company'}
-                  </Link>
-                ) : (
-                  <span>{b.company_name ?? 'Unknown Company'}</span>
-                )}
-              </div>
-              <p className="text-sm text-gray-500">
-                <strong>Service Type:</strong> {b.service_type}
-              </p>
-              {renderBookingDetails(b)}
-            </CardContent>
-          </Card>
-        ))
       ) : (
-        <p className="text-gray-500">No bookings found.</p>
+        <>
+          {renderSection('Flights', flightBookings)}
+          {renderSection('Buses', busBookings)}
+          {renderSection('Hotels', hotelBookings)}
+          {renderSection('Activities', activityBookings)}
+        </>
       )}
     </div>
   );
