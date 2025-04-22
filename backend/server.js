@@ -10,27 +10,25 @@ import hotelRouter from './routes/hotel.routes.js';
 import bookingRouter from './routes/booking.routes.js';
 import companyRouter from './routes/company.routes.js';
 import reviewRouter from './routes/review.routes.js';
-import activityRouter from './routes/activity.routes.js'; // ✅ NEW
+import activityRouter from './routes/activity.routes.js';
+import couponRouter from './routes/coupon.routes.js';
 
 config();
 const { Client } = pg;
 const app = express();
 const port = 8080;
 
-// Enable CORS for all routes
+// Enable CORS + JSON parsing
 app.use(cors());
-
-// Allow Express to parse JSON
 app.use(express.json());
 
-// Create a new PostgreSQL client
+// DB connection
 const client = new Client({
   connectionString: process.env.DB_CONNECTION_STRING,
 });
+await client.connect();
 
-await client.connect(); // Connect to DB
-
-// Reset hotel room status
+// Reset hotel room statuses
 async function resetHotelRoomStatus() {
   try {
     const result = await client.query(
@@ -42,23 +40,23 @@ async function resetHotelRoomStatus() {
   }
 }
 
-// Reset activity status
+// Reset activity statuses
 async function resetActivityStatus() {
   try {
     const result = await client.query(
-      `UPDATE Activity SET status = 'Available'`
+      `UPDATE Activity SET signups = 0`
     );
-    console.log(`Reset success: ${result.rowCount} activities set to 'Available'`);
+    console.log(`Reset success: ${result.rowCount} activities had signup_count reset`);
   } catch (err) {
-    console.error('Failed to reset activity statuses:', err);
+    console.error('Failed to reset activity signups:', err);
   }
 }
 
-// Run both resets
+// Run resets
 await resetHotelRoomStatus();
 await resetActivityStatus();
 
-// API routes
+// Mount API routes
 app.use(
   '/api',
   userRouter,
@@ -68,7 +66,8 @@ app.use(
   bookingRouter,
   companyRouter,
   reviewRouter,
-  activityRouter
+  activityRouter,
+  couponRouter 
 );
 
 // Start server

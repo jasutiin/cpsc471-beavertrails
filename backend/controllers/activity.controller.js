@@ -1,6 +1,6 @@
 import { client } from '../server.js';
 
-// get single activity by servicetype_id
+// Get single activity by servicetype_id
 export async function getActivityById(req, res) {
   const { servicetype_id } = req.params;
 
@@ -17,6 +17,38 @@ export async function getActivityById(req, res) {
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error fetching activity by ID:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+// Increment activity signup count
+export async function incrementActivitySignup(req, res) {
+  const { servicetype_id } = req.params;
+
+  try {
+    const { rows } = await client.query(
+      'SELECT signups, capacity FROM Activity WHERE servicetype_id = $1',
+      [servicetype_id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Activity not found' });
+    }
+
+    const { signups, capacity } = rows[0];
+
+    if (signups >= capacity) {
+      return res.status(400).json({ message: 'Activity is fully booked' });
+    }
+
+    await client.query(
+      'UPDATE Activity SET signups = signups + 1 WHERE servicetype_id = $1',
+      [servicetype_id]
+    );
+
+    res.status(200).json({ message: 'Signup recorded!' });
+  } catch (err) {
+    console.error('Error updating activity signups:', err);
     res.status(500).json({ message: 'Server error' });
   }
 }

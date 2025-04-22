@@ -28,16 +28,19 @@ export default function ActivityDetail() {
 
   const confirmBooking = async () => {
     try {
-      const res = await fetch('http://localhost:8080/api/bookings/activities', {
+      const res = await fetch(`http://localhost:8080/api/activities/${servicetype_id}/signup`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ servicetype_id }),
+        headers: { 'Content-Type': 'application/json' }
       });
 
       if (res.ok) {
         setShowModal(false);
         setBookingConfirmed(true);
-        setActivity((prev: any) => ({ ...prev, status: 'Booked' }));
+        setActivity((prev: any) => ({
+          ...prev,
+          signups: Number(prev.signups) + 1
+
+        }));
       } else {
         const error = await res.json();
         alert(`Booking failed: ${error.message || 'Unknown error'}`);
@@ -50,6 +53,8 @@ export default function ActivityDetail() {
 
   if (loading) return <p className="p-6">Loading activity details...</p>;
   if (!activity) return <p className="p-6 text-red-500">Activity not found.</p>;
+
+  const spotsLeft = activity.capacity - activity.signups;
 
   return (
     <div className="p-6 h-[calc(100vh-80px)] max-w-4xl mx-auto">
@@ -65,24 +70,40 @@ export default function ActivityDetail() {
       <div className="space-y-2 text-gray-700 text-base">
         <p><strong>Description:</strong> {activity.description}</p>
         <p><strong>Capacity:</strong> {activity.capacity}</p>
+        <p><strong>Spots Taken:</strong> {activity.signups}</p>
         <p><strong>Age Restriction:</strong> {activity.age_restriction ? 'Yes' : 'No'}</p>
         <p><strong>Start:</strong> {new Date(activity.start_time).toLocaleString()}</p>
         <p><strong>End:</strong> {new Date(activity.end_time).toLocaleString()}</p>
-        <p>
-          <strong>Status:</strong>{' '}
-          <span className={activity.status === 'Booked' ? 'text-red-500' : 'text-green-600'}>
-            {activity.status || 'Available'}
-          </span>
+        <p
+          className={`text-lg font-semibold ${
+            spotsLeft <= 0 ? 'text-gray-400 line-through' : 'text-blue-600'
+          }`}
+        >
+          ${activity.price}
         </p>
-        <p className="text-blue-600 font-semibold text-lg">${activity.price}</p>
+
+        {spotsLeft <= 10 && spotsLeft > 0 && (
+          <p className="text-yellow-600 font-medium">
+            {spotsLeft === 1 ? 'Only 1 spot left! 🔥' : `Only ${spotsLeft} spots left!`}
+          </p>
+        )}
+
+        {spotsLeft <= 0 && (
+          <p className="text-red-600 font-semibold">This activity is fully booked.</p>
+        )}
       </div>
 
-      {activity.status !== 'Booked' && !bookingConfirmed && (
+      {!bookingConfirmed && (
         <button
+          disabled={spotsLeft <= 0}
           onClick={() => setShowModal(true)}
-          className="mt-6 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          className={`mt-6 px-6 py-2 rounded transition text-white ${
+            spotsLeft <= 0
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
         >
-          Book Now
+          {spotsLeft <= 0 ? 'Fully Booked' : 'Book Now'}
         </button>
       )}
 
@@ -128,4 +149,3 @@ export default function ActivityDetail() {
     </div>
   );
 }
-
