@@ -86,20 +86,42 @@ export async function getHotelById(req, res) {
 }
 
 export async function bookHotel(req, res) {
-  const { servicetype_id } = req.body;
+  const { servicetype_id, user_id } = req.body;
 
-  if (!servicetype_id) {
-    return res.status(400).json({ message: 'Missing servicetype_id' });
+  if (!servicetype_id || !user_id) {
+    return res
+      .status(400)
+      .json({ message: 'Missing servicetype_id or user_id' });
   }
 
   try {
+    await client.query('BEGIN');
+
+    const paymentResult = await client.query(
+      'INSERT INTO Payment (ServiceType_Id) VALUES ($1) RETURNING Payment_Id',
+      [servicetype_id]
+    );
+    const payment_id = paymentResult.rows[0].payment_id;
+
     await client.query(
-      'UPDATE HotelRoom SET status = $1 WHERE servicetype_id = $2',
+      'INSERT INTO User_Makes_Payment (User_Id, Payment_Id) VALUES ($1, $2)',
+      [user_id, payment_id]
+    );
+
+    await client.query(
+      'INSERT INTO Payment_Books_Service (Payment_Id, ServiceType_Id) VALUES ($1, $2)',
+      [payment_id, servicetype_id]
+    );
+
+    await client.query(
+      'UPDATE HotelRoom SET Status = $1 WHERE ServiceType_Id = $2',
       ['Booked', servicetype_id]
     );
 
+    await client.query('COMMIT');
     res.status(200).json({ message: 'Hotel booked successfully!' });
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('Error booking hotel:', err);
     res.status(500).json({ message: 'Booking failed due to server error' });
   }
