@@ -12,11 +12,13 @@ export default function Activities() {
     const fetchActivities = async () => {
       const searchParams = new URLSearchParams(window.location.search);
       const city = searchParams.get('location');
-      const date = searchParams.get('activityDate');
+      const date = searchParams.get('date');
 
       if (city && date) {
         try {
-          const res = await fetch(`http://localhost:8080/api/activities?city=${city}&date=${date}`);
+          const res = await fetch(
+            `http://localhost:8080/api/activities?city=${city}&date=${date}`
+          );
           const data = await res.json();
           setActivities(data);
         } catch (err) {
@@ -55,4 +57,3 @@ export default function Activities() {
     </div>
   );
 }
-
