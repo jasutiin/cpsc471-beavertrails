@@ -1,5 +1,6 @@
 import { client } from '../server.js';
 
+// works for activities, flights, buses, hotels etc.
 export async function getCouponByServiceId(req, res) {
   const { servicetype_id } = req.params;
 
@@ -15,7 +16,7 @@ export async function getCouponByServiceId(req, res) {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'No coupon found for this service' });
+      return res.status(200).json({ discount: null });
     }
 
     res.json(result.rows[0]);

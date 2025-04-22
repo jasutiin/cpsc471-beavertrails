@@ -1,9 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function ActivityDetail() {
   const { servicetype_id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [activity, setActivity] = useState<any>(null);
   const [discount, setDiscount] = useState<number | null>(null);
@@ -38,17 +40,23 @@ export default function ActivityDetail() {
 
   const confirmBooking = async () => {
     try {
-      const res = await fetch(`http://localhost:8080/api/activities/${servicetype_id}/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const res = await fetch(
+        `http://localhost:8080/api/activities/${servicetype_id}/signup`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: user.user_id,
+          }),
+        }
+      );
 
       if (res.ok) {
         setShowModal(false);
         setBookingConfirmed(true);
         setActivity((prev: any) => ({
           ...prev,
-          signups: Number(prev.signups) + 1
+          signups: Number(prev.signups) + 1,
         }));
       } else {
         const error = await res.json();
@@ -79,19 +87,38 @@ export default function ActivityDetail() {
       <h1 className="text-3xl font-bold mb-4">Activity Details</h1>
 
       <div className="space-y-2 text-gray-700 text-base">
-        <p><strong>Description:</strong> {activity.description}</p>
-        <p><strong>Capacity:</strong> {activity.capacity}</p>
-        <p><strong>Spots Taken:</strong> {activity.signups}</p>
-        <p><strong>Age Restriction:</strong> {activity.age_restriction ? 'Yes' : 'No'}</p>
-        <p><strong>Start:</strong> {new Date(activity.start_time).toLocaleString()}</p>
-        <p><strong>End:</strong> {new Date(activity.end_time).toLocaleString()}</p>
+        <p>
+          <strong>Description:</strong> {activity.description}
+        </p>
+        <p>
+          <strong>Capacity:</strong> {activity.capacity}
+        </p>
+        <p>
+          <strong>Spots Taken:</strong> {activity.signups}
+        </p>
+        <p>
+          <strong>Age Restriction:</strong>{' '}
+          {activity.age_restriction ? 'Yes' : 'No'}
+        </p>
+        <p>
+          <strong>Start:</strong>{' '}
+          {new Date(activity.start_time).toLocaleString()}
+        </p>
+        <p>
+          <strong>End:</strong> {new Date(activity.end_time).toLocaleString()}
+        </p>
 
         <div>
           <p className="text-lg font-semibold text-blue-600">
             {discount ? (
               <>
-                <span className="line-through mr-2 text-gray-500">${price.toFixed(2)}</span>
-                ${discountedPrice.toFixed(2)} <span className="text-green-600 text-sm">(You save ${discount.toFixed(2)}!)</span>
+                <span className="line-through mr-2 text-gray-500">
+                  ${price.toFixed(2)}
+                </span>
+                ${discountedPrice.toFixed(2)}{' '}
+                <span className="text-green-600 text-sm">
+                  (You save ${discount.toFixed(2)}!)
+                </span>
               </>
             ) : (
               `$${price.toFixed(2)}`
@@ -101,12 +128,16 @@ export default function ActivityDetail() {
 
         {spotsLeft <= 10 && spotsLeft > 0 && (
           <p className="text-yellow-600 font-medium">
-            {spotsLeft === 1 ? 'Only 1 spot left! 🔥' : `Only ${spotsLeft} spots left!`}
+            {spotsLeft === 1
+              ? 'Only 1 spot left! 🔥'
+              : `Only ${spotsLeft} spots left!`}
           </p>
         )}
 
         {spotsLeft <= 0 && (
-          <p className="text-red-600 font-semibold">This activity is fully booked.</p>
+          <p className="text-red-600 font-semibold">
+            This activity is fully booked.
+          </p>
         )}
       </div>
 
@@ -127,8 +158,12 @@ export default function ActivityDetail() {
       {showModal && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 shadow-lg w-[90%] max-w-sm text-center space-y-4">
-            <h2 className="text-lg font-semibold text-gray-800">Confirm Booking</h2>
-            <p className="text-gray-700">Would you like to book this activity?</p>
+            <h2 className="text-lg font-semibold text-gray-800">
+              Confirm Booking
+            </h2>
+            <p className="text-gray-700">
+              Would you like to book this activity?
+            </p>
             <div className="flex justify-center gap-4 pt-4">
               <button
                 onClick={() => setShowModal(false)}
@@ -150,8 +185,12 @@ export default function ActivityDetail() {
       {bookingConfirmed && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 shadow-lg w-[90%] max-w-sm text-center space-y-4">
-            <h2 className="text-lg font-semibold text-gray-800">Booking Confirmed</h2>
-            <p className="text-gray-700">You have successfully booked this activity.</p>
+            <h2 className="text-lg font-semibold text-gray-800">
+              Booking Confirmed
+            </h2>
+            <p className="text-gray-700">
+              You have successfully booked this activity.
+            </p>
             <div className="flex justify-center pt-4">
               <button
                 onClick={() => setBookingConfirmed(false)}
@@ -166,4 +205,3 @@ export default function ActivityDetail() {
     </div>
   );
 }
-

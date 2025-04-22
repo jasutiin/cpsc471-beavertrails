@@ -1,26 +1,30 @@
-/*
-this is where all the bus related functions are. some of the functions
-include getting all buses, buses of a specific user, etc. these functions are called
-by the endpoints defined in bus.routes.js
-*/
-
 import { client } from '../server.js';
+
+/*
+This file handles all bus-related functionality.
+*/
 
 export async function getBusBookingsOfUser(req, res) {
   const query = {
     text: `
-    SELECT b.*
-    FROM Bus b
-    JOIN Payment_Books_Service pbs ON b.ServiceType_Id = pbs.ServiceType_Id
-    JOIN Payment p ON pbs.Payment_Id = p.Payment_Id
-    JOIN User_Makes_Payment ump ON p.Payment_Id = ump.Payment_Id
-    JOIN Users u ON ump.User_Id = u.User_Id
-    WHERE u.User_Id = $1`,
+      SELECT b.*
+      FROM Bus b
+      JOIN Payment_Books_Service pbs ON b.ServiceType_Id = pbs.ServiceType_Id
+      JOIN Payment p ON pbs.Payment_Id = p.Payment_Id
+      JOIN User_Makes_Payment ump ON p.Payment_Id = ump.Payment_Id
+      JOIN Users u ON ump.User_Id = u.User_Id
+      WHERE u.User_Id = $1;
+    `,
     values: [req.params.user_id],
   };
 
-  const result = await client.query(query);
-  res.send(result.rows);
+  try {
+    const result = await client.query(query);
+    res.send(result.rows);
+  } catch (err) {
+    console.error('Error fetching user bus bookings:', err);
+    res.status(500).send('Server error');
+  }
 }
 
 export async function getBuses(req, res) {
@@ -51,97 +55,117 @@ export async function getBuses(req, res) {
 
   query_text += ';';
 
-  const result = await client.query({
-    text: query_text,
-    values: query_values,
-  });
-  res.send(result.rows);
+  try {
+    const result = await client.query({
+      text: query_text,
+      values: query_values,
+    });
+
+    res.send(result.rows);
+  } catch (err) {
+    console.error('Error fetching buses:', err);
+    res.status(500).send('Server error');
+  }
 }
 
-export async function getBusById(req, res) {
-  const query = {
-    text: `
-      SELECT b.*
-      FROM Bus b
-      WHERE b.ServiceType_Id = $1;`,
-    values: [req.params.bus_id],
-  };
+export async function getBusByServiceId(req, res) {
+  const { servicetype_id } = req.params;
 
-  const result = await client.query(query);
-  res.send(result.rows);
+  try {
+    const result = await client.query(
+      `
+      SELECT b.*, c.company_name
+      FROM Bus b
+      JOIN BusCompany_Offers_Bus bc ON b.ServiceType_Id = bc.ServiceType_Id
+      JOIN Company c ON bc.Company_Id = c.Company_Id
+      WHERE b.ServiceType_Id = $1;
+      `,
+      [servicetype_id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Bus not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching bus by service ID:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 }
 
 export async function getSeatsOfBus(req, res) {
-  const { bus_id } = req.params;
+  const { servicetype_id } = req.params;
 
-  const query_text = `
-    SELECT bs.*
-    FROM BusSeat bs
-    WHERE bs.ServiceType_id = $1
-    AND bs.Is_Taken = FALSE;`;
+  try {
+    const result = await client.query(
+      `
+      SELECT bs.*
+      FROM BusSeat bs
+      WHERE bs.ServiceType_Id = $1 AND bs.Is_Taken = FALSE;
+      `,
+      [servicetype_id]
+    );
 
-  const query_values = [bus_id];
-
-  const result = await client.query({
-    text: query_text,
-    values: query_values,
-  });
-  res.send(result.rows);
+    res.send(result.rows);
+  } catch (err) {
+    console.error('Error fetching seats:', err);
+    res.status(500).send('Server error');
+  }
 }
 
 export async function bookSeatInBus(req, res) {
   const { user_id, servicetype_id, seat_number } = req.body;
 
+  if (!user_id || !servicetype_id) {
+    return res.status(400).json({ message: 'Missing booking data' });
+  }
+
   try {
     await client.query('BEGIN');
 
-    const paymentQuery = `
-      INSERT INTO Payment (ServiceType_Id)
-      VALUES ($1)
-      RETURNING Payment_Id;
-    `;
-    const paymentResult = await client.query(paymentQuery, [servicetype_id]);
+    const paymentResult = await client.query(
+      `INSERT INTO Payment (ServiceType_Id) VALUES ($1) RETURNING Payment_Id`,
+      [servicetype_id]
+    );
 
     const payment_id = paymentResult.rows[0]?.payment_id;
-    if (!payment_id) {
-      throw new Error('Failed to generate payment_id');
-    }
+    if (!payment_id) throw new Error('Failed to create payment record');
 
-    const paymentBooksServiceQuery = `
-      INSERT INTO Payment_Books_Service (Payment_Id, ServiceType_Id)
-      VALUES ($1, $2);
-    `;
-    await client.query(paymentBooksServiceQuery, [payment_id, servicetype_id]);
+    await client.query(
+      `INSERT INTO Payment_Books_Service (Payment_Id, ServiceType_Id) VALUES ($1, $2)`,
+      [payment_id, servicetype_id]
+    );
 
-    const userMakesPaymentQuery = `
-      INSERT INTO User_Makes_Payment (User_Id, Payment_Id)
-      VALUES ($1, $2);
-    `;
-    await client.query(userMakesPaymentQuery, [user_id, payment_id]);
+    await client.query(
+      `INSERT INTO User_Makes_Payment (User_Id, Payment_Id) VALUES ($1, $2)`,
+      [user_id, payment_id]
+    );
 
-    const updateSeatQuery = `
-      UPDATE BusSeat
-      SET Is_Taken = TRUE
-      WHERE ServiceType_Id = $1 AND Seat_Number = $2 AND Is_Taken = FALSE;
-    `;
-    const updateResult = await client.query(updateSeatQuery, [
-      servicetype_id,
-      seat_number,
-    ]);
+    if (seat_number) {
+      const updateResult = await client.query(
+        `
+        UPDATE BusSeat
+        SET Is_Taken = TRUE
+        WHERE ServiceType_Id = $1 AND Seat_Number = $2 AND Is_Taken = FALSE;
+        `,
+        [servicetype_id, seat_number]
+      );
 
-    if (updateResult.rowCount === 0) {
-      throw new Error('Seat is already taken or does not exist.');
+      if (updateResult.rowCount === 0) {
+        throw new Error('Seat is already taken or does not exist');
+      }
     }
 
     await client.query('COMMIT');
 
     res.status(200).json({
-      message: 'Seat successfully booked and payment processed.',
-      payment_id: payment_id,
+      message: 'Seat successfully booked and payment processed',
+      payment_id,
     });
-  } catch (error) {
+  } catch (err) {
     await client.query('ROLLBACK');
-    console.error(error);
-    res.status(500).json({ error: error.message });
+    console.error('Error booking seat:', err);
+    res.status(500).json({ message: err.message || 'Booking failed' });
   }
 }

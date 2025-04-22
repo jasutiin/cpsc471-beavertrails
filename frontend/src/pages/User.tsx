@@ -20,20 +20,21 @@ export default function User() {
     const fetchBookings = async () => {
       setLoading(true);
       try {
-        const [flightsRes, busesRes, hotelsRes] = await Promise.all([
-          fetch(`http://localhost:8080/api/bookings/flights/${user.user_id}`),
-          fetch(`http://localhost:8080/api/bookings/buses/${user.user_id}`),
-          fetch(`http://localhost:8080/api/bookings/hotels/${user.user_id}`),
-          // fetch(
-          //   `http://localhost:8080/api/bookings/activities/${user.user_id}`
-          // ),
-        ]);
+        const [flightsRes, busesRes, hotelsRes, activitiesRes] =
+          await Promise.all([
+            fetch(`http://localhost:8080/api/bookings/flights/${user.user_id}`),
+            fetch(`http://localhost:8080/api/bookings/buses/${user.user_id}`),
+            fetch(`http://localhost:8080/api/bookings/hotels/${user.user_id}`),
+            fetch(
+              `http://localhost:8080/api/bookings/activities/${user.user_id}`
+            ),
+          ]);
 
         const [flights, buses, hotels, activities] = await Promise.all([
           flightsRes.json(),
           busesRes.json(),
           hotelsRes.json(),
-          // activitiesRes.json(),
+          activitiesRes.json(),
         ]);
 
         console.log(flights);
@@ -41,7 +42,7 @@ export default function User() {
         setFlightBookings(flights);
         setBusBookings(buses);
         setHotelBookings(hotels);
-        // setActivityBookings(activities);
+        setActivityBookings(activities);
       } catch (err) {
         console.error('Failed to fetch one or more booking types:', err);
       } finally {
@@ -154,22 +155,25 @@ export default function User() {
         return (
           <>
             <p>
-              <strong>Description:</strong> {b.activity_description}
+              <strong>Description:</strong> {b.description}
+            </p>
+            <p>
+              <strong>City:</strong> {b.city}
             </p>
             <div className="flex gap-4">
               <p>
-                <strong>Start:</strong> {formatDateTime(b.activity_start)}
+                <strong>Start:</strong> {formatDateTime(b.start_time)}
               </p>
               <p>
-                <strong>End:</strong> {formatDateTime(b.activity_end)}
+                <strong>End:</strong> {formatDateTime(b.end_time)}
               </p>
             </div>
             <div className="flex gap-4">
               <p>
-                <strong>Price:</strong> ${b.activity_price}
+                <strong>Price:</strong> ${b.price}
               </p>
               <p>
-                <strong>Capacity:</strong> {b.activity_capacity}
+                <strong>Capacity:</strong> {b.capacity}
               </p>
               <p>
                 <strong>Age Restriction:</strong>{' '}
