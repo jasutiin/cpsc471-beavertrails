@@ -114,7 +114,7 @@ export default function User() {
               <strong>Price:</strong> ${b.bus_price}
             </p>
             <p>
-              <strong>Amenities:</strong> {b.bus_amenities}
+              <strong>Amenities:</strong> {b.amenities}
             </p>
           </>
         );
@@ -199,9 +199,6 @@ export default function User() {
                   {b.company_name ?? 'Unknown Company'}
                 </Link>
               </div>
-              <p className="text-sm text-gray-500">
-                <strong>Service Type:</strong> {b.service_type}
-              </p>
               {renderBookingDetails(b)}
             </CardContent>
           </Card>
