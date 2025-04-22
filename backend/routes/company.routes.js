@@ -12,7 +12,7 @@ import {
 
 const router = express.Router();
 
-router.get('/:company_id', getCompanyDetails);
+router.get('/companies/:company_id', getCompanyDetails);
 router.post('/auth/company/login', loginCompany);
 router.post('/auth/company/signup', signupCompany);
 
