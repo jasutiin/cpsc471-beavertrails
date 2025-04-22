@@ -21,8 +21,8 @@ export async function getActivityById(req, res) {
   }
 }
 
-// Increment activity signup count
-export async function incrementActivitySignup(req, res) {
+// increment activity signups
+export async function incrementActivitySignups(req, res) {
   const { servicetype_id } = req.params;
 
   try {
@@ -52,3 +52,4 @@ export async function incrementActivitySignup(req, res) {
     res.status(500).json({ message: 'Server error' });
   }
 }
+
