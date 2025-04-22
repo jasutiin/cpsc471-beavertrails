@@ -8,8 +8,8 @@ export async function getCouponByServiceId(req, res) {
       `
       SELECT c.discount
       FROM Coupon c
-      JOIN Service_Has_Coupon shc ON c.coupon_id = shc.coupon_id
-      WHERE shc.servicetype_id = $1
+      JOIN coupon_applies_to_service cas ON c.coupon_id = cas.coupon_id
+      WHERE cas.servicetype_id = $1
       `,
       [servicetype_id]
     );

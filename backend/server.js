@@ -46,7 +46,7 @@ async function resetActivityStatus() {
     const result = await client.query(
       `UPDATE Activity SET signups = 0`
     );
-    console.log(`Reset success: ${result.rowCount} activities had signup_count reset`);
+    console.log(`Reset success: ${result.rowCount} activities had signups reset`);
   } catch (err) {
     console.error('Failed to reset activity signups:', err);
   }

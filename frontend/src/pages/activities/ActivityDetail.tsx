@@ -6,24 +6,34 @@ export default function ActivityDetail() {
   const navigate = useNavigate();
 
   const [activity, setActivity] = useState<any>(null);
+  const [discount, setDiscount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    const fetchActivity = async () => {
+    const fetchActivityAndCoupon = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/activities/${servicetype_id}`);
-        const data = await res.json();
-        setActivity(data);
+        const [activityRes, couponRes] = await Promise.all([
+          fetch(`http://localhost:8080/api/activities/${servicetype_id}`),
+          fetch(`http://localhost:8080/api/coupons/${servicetype_id}`),
+        ]);
+
+        const activityData = await activityRes.json();
+        setActivity(activityData);
+
+        if (couponRes.ok) {
+          const couponData = await couponRes.json();
+          setDiscount(Number(couponData.discount));
+        }
       } catch (err) {
-        console.error('Error fetching activity:', err);
+        console.error('Error fetching activity or coupon:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchActivity();
+    fetchActivityAndCoupon();
   }, [servicetype_id]);
 
   const confirmBooking = async () => {
@@ -39,7 +49,6 @@ export default function ActivityDetail() {
         setActivity((prev: any) => ({
           ...prev,
           signups: Number(prev.signups) + 1
-
         }));
       } else {
         const error = await res.json();
@@ -55,6 +64,8 @@ export default function ActivityDetail() {
   if (!activity) return <p className="p-6 text-red-500">Activity not found.</p>;
 
   const spotsLeft = activity.capacity - activity.signups;
+  const price = Number(activity.price);
+  const discountedPrice = discount ? price - discount : price;
 
   return (
     <div className="p-6 h-[calc(100vh-80px)] max-w-4xl mx-auto">
@@ -74,13 +85,19 @@ export default function ActivityDetail() {
         <p><strong>Age Restriction:</strong> {activity.age_restriction ? 'Yes' : 'No'}</p>
         <p><strong>Start:</strong> {new Date(activity.start_time).toLocaleString()}</p>
         <p><strong>End:</strong> {new Date(activity.end_time).toLocaleString()}</p>
-        <p
-          className={`text-lg font-semibold ${
-            spotsLeft <= 0 ? 'text-gray-400 line-through' : 'text-blue-600'
-          }`}
-        >
-          ${activity.price}
-        </p>
+
+        <div>
+          <p className="text-lg font-semibold text-blue-600">
+            {discount ? (
+              <>
+                <span className="line-through mr-2 text-gray-500">${price.toFixed(2)}</span>
+                ${discountedPrice.toFixed(2)} <span className="text-green-600 text-sm">(You save ${discount.toFixed(2)}!)</span>
+              </>
+            ) : (
+              `$${price.toFixed(2)}`
+            )}
+          </p>
+        </div>
 
         {spotsLeft <= 10 && spotsLeft > 0 && (
           <p className="text-yellow-600 font-medium">
@@ -149,3 +166,4 @@ export default function ActivityDetail() {
     </div>
   );
 }
+
