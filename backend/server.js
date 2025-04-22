@@ -10,40 +10,53 @@ import hotelRouter from './routes/hotel.routes.js';
 import bookingRouter from './routes/booking.routes.js';
 import companyRouter from './routes/company.routes.js';
 import reviewRouter from './routes/review.routes.js';
+import activityRouter from './routes/activity.routes.js'; // ✅ NEW
 
 config();
 const { Client } = pg;
 const app = express();
 const port = 8080;
 
-// enable cors for all routes
+// Enable CORS for all routes
 app.use(cors());
 
-// this is so that express can properly parse req.body into some readable format
+// Allow Express to parse JSON
 app.use(express.json());
 
-// create a new supabase client
+// Create a new PostgreSQL client
 const client = new Client({
   connectionString: process.env.DB_CONNECTION_STRING,
 });
 
-await client.connect(); // connect to client
+await client.connect(); // Connect to DB
 
-// reset hotel statuses on server start
+// Reset hotel room status
 async function resetHotelRoomStatus() {
   try {
     const result = await client.query(
       `UPDATE HotelRoom SET status = 'Available'`
     );
-    console.log(
-      `Reset success: ${result.rowCount} rooms updated to 'Available'`
-    );
+    console.log(`Reset success: ${result.rowCount} hotel rooms set to 'Available'`);
   } catch (err) {
-    console.error(' Failed to reset hotel statuses:', err);
+    console.error('Failed to reset hotel statuses:', err);
   }
 }
 
-resetHotelRoomStatus(); // run the reset
+// Reset activity status
+async function resetActivityStatus() {
+  try {
+    const result = await client.query(
+      `UPDATE Activity SET status = 'Available'`
+    );
+    console.log(`Reset success: ${result.rowCount} activities set to 'Available'`);
+  } catch (err) {
+    console.error('Failed to reset activity statuses:', err);
+  }
+}
+
+// Run both resets
+await resetHotelRoomStatus();
+await resetActivityStatus();
 
 // API routes
 app.use(
@@ -54,10 +67,11 @@ app.use(
   busRouter,
   bookingRouter,
   companyRouter,
-  reviewRouter
+  reviewRouter,
+  activityRouter
 );
 
-// start the server
+// Start server
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
