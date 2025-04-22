@@ -93,7 +93,7 @@ export async function getFlightById(req, res) {
       return res.status(404).json({ message: 'Flight not found' });
     }
 
-    res.json(result.rows[0]); // Return just the object, not the array
+    res.json(result.rows[0]);
   } catch (err) {
     console.error('Error fetching flight by ID:', err);
     res.status(500).json({ message: 'Server error' });

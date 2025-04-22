@@ -1,6 +1,5 @@
 import { client } from '../server.js';
 
-// get single activity by servicetype_id
 export async function getActivityById(req, res) {
   const { servicetype_id } = req.params;
 
@@ -21,7 +20,6 @@ export async function getActivityById(req, res) {
   }
 }
 
-// increment activity signups
 export async function incrementActivitySignups(req, res) {
   const { servicetype_id } = req.params;
   const { user_id } = req.body;
@@ -30,7 +28,6 @@ export async function incrementActivitySignups(req, res) {
   try {
     await client.query('BEGIN');
 
-    // Check if activity exists and has capacity
     const { rows } = await client.query(
       'SELECT signups, capacity FROM Activity WHERE servicetype_id = $1',
       [servicetype_id]
@@ -48,7 +45,6 @@ export async function incrementActivitySignups(req, res) {
       return res.status(400).json({ message: 'Activity is fully booked' });
     }
 
-    // Create a payment record
     const paymentResult = await client.query(
       `INSERT INTO Payment (ServiceType_Id) VALUES ($1) RETURNING Payment_Id`,
       [servicetype_id]
@@ -59,19 +55,16 @@ export async function incrementActivitySignups(req, res) {
       throw new Error('Failed to generate payment_id');
     }
 
-    // Link payment to the service
     await client.query(
       `INSERT INTO Payment_Books_Service (Payment_Id, ServiceType_Id) VALUES ($1, $2)`,
       [payment_id, servicetype_id]
     );
 
-    // Link payment to the user
     await client.query(
       `INSERT INTO User_Makes_Payment (User_Id, Payment_Id) VALUES ($1, $2)`,
       [user_id, payment_id]
     );
 
-    // Increment signup count
     await client.query(
       'UPDATE Activity SET signups = signups + 1 WHERE servicetype_id = $1',
       [servicetype_id]
