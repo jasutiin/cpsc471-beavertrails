@@ -5,6 +5,33 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 
+interface Booking {
+  servicetype_id: number;
+  company_id: number;
+  company_name?: string;
+  service_type: 'flight' | 'bus' | 'hotel' | 'activity';
+  departure_city?: string;
+  arrival_city?: string;
+  departure_time?: string | null;
+  arrival_time?: string | null;
+  flightclassoptions?: string;
+  flight_price?: number;
+  bus_price?: number;
+  amenities?: string;
+  room_number?: string;
+  room_type?: string;
+  bed_type?: string;
+  check_in_time?: string | null;
+  check_out_time?: string | null;
+  city?: string;
+  price?: number;
+  description?: string;
+  start_time?: string | null;
+  end_time?: string | null;
+  capacity?: number;
+  age_restriction?: boolean;
+}
+
 export default function User() {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
@@ -17,6 +44,11 @@ export default function User() {
   const [activityBookings, setActivityBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
+    if (!user?.user_id) {
+      setLoading(false);
+      return;
+    }
+
     const fetchBookings = async () => {
       setLoading(true);
       try {
@@ -37,28 +69,30 @@ export default function User() {
           activitiesRes.json(),
         ]);
 
-        console.log(flights);
-
-        setFlightBookings(flights);
-        setBusBookings(buses);
-        setHotelBookings(hotels);
-        setActivityBookings(activities);
+        setFlightBookings(Array.isArray(flights) ? flights : []);
+        setBusBookings(Array.isArray(buses) ? buses : []);
+        setHotelBookings(Array.isArray(hotels) ? hotels : []);
+        setActivityBookings(Array.isArray(activities) ? activities : []);
       } catch (err) {
         console.error('Failed to fetch one or more booking types:', err);
+        setFlightBookings([]);
+        setBusBookings([]);
+        setHotelBookings([]);
+        setActivityBookings([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchBookings();
-  }, [user.user_id]);
+  }, [user?.user_id]);
 
   const handleLogout = () => {
     logout();
     navigate('/auth');
   };
 
-  const formatDateTime = (datetime: string | null) =>
+  const formatDateTime = (datetime: string | null | undefined) =>
     datetime ? new Date(datetime).toLocaleString() : 'N/A';
 
   const renderBookingDetails = (b: Booking) => {
@@ -188,7 +222,7 @@ export default function User() {
   };
 
   const renderSection = (title: string, bookings: Booking[]) => {
-    if (bookings.length === 0) return null;
+    if (!Array.isArray(bookings) || bookings.length === 0) return null;
     return (
       <div className="space-y-2">
         <h2 className="text-xl font-bold">{title}</h2>

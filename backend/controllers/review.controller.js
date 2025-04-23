@@ -15,6 +15,7 @@ export async function getReviewsOfCompany(req, res) {
         r.Review_Id,
         r.Text,
         r.Rating,
+        u.User_Id,
         u.Name AS user_name,
         u.Email AS user_email
       FROM Review r
@@ -75,6 +76,68 @@ export async function postReviewForCompany(req, res) {
     res.status(201).json({ message: 'Review submitted successfully' });
   } catch (error) {
     console.error('Error posting review:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
+export async function updateReview(req, res) {
+  const reviewId = req.params.review_id;
+  const { text, rating } = req.body;
+  console.log(reviewId);
+  console.log(text);
+  console.log(rating);
+
+  try {
+    const query = {
+      text: `
+        UPDATE Review
+        SET Text = $1,
+            Rating = $2
+        WHERE Review_Id = $3
+        RETURNING *
+      `,
+      values: [text, rating, reviewId],
+    };
+
+    const result = await client.query(query);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Review not found' });
+    }
+
+    res
+      .status(200)
+      .json({ message: 'Review updated successfully', review: result.rows[0] });
+  } catch (error) {
+    console.error('Error updating review:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
+
+export async function deleteReview(req, res) {
+  const reviewId = req.params.review_id;
+
+  try {
+    await client.query(
+      'DELETE FROM Review_Rates_Company WHERE Review_Id = $1',
+      [reviewId]
+    );
+    await client.query('DELETE FROM User_Writes_Review WHERE Review_Id = $1', [
+      reviewId,
+    ]);
+
+    const result = await client.query(
+      'DELETE FROM Review WHERE Review_Id = $1 RETURNING *',
+      [reviewId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Review not found' });
+    }
+
+    res.status(200).json({ message: 'Review deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting review:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
