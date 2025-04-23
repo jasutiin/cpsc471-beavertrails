@@ -50,12 +50,12 @@ export async function getAllHotels(req, res) {
 
   if (check_in_time) {
     query_values.push(check_in_time);
-    conditions.push(`DATE(h.check_in_time) = $${query_values.length}`);
+    conditions.push(`DATE(h.check_in_time) = DATE($${query_values.length})`);
   }
 
   if (check_out_time) {
     query_values.push(check_out_time);
-    conditions.push(`DATE(h.check_out_time) = $${query_values.length}`);
+    conditions.push(`DATE(h.check_out_time) = DATE($${query_values.length})`);
   }
 
   if (conditions.length > 0) {

@@ -52,7 +52,9 @@ export async function getFlights(req, res) {
   }
 
   if (departure_date) {
-    conditions.push(`DATE(f.departure_time) = $${query_values.length + 1}`);
+    conditions.push(
+      `DATE(f.departure_time) = DATE($${query_values.length + 1})`
+    );
     query_values.push(departure_date);
   }
 

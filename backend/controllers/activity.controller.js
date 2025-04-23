@@ -97,7 +97,7 @@ export async function getActivities(req, res) {
   }
 
   if (date) {
-    conditions.push(`DATE(start_time) = $${query_values.length + 1}`);
+    conditions.push(`DATE(start_time) = DATE($${query_values.length + 1})`);
     query_values.push(date);
   }
 
